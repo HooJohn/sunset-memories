@@ -1,4 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm'; // Added OneToMany
+import { Memoir } from '../../memoirs/entities/memoir.entity'; // Added Memoir import
+// import { MemoirCollaboration } from '../../memoirs/entities/memoir-collaboration.entity'; // For future relations
+// import { ServiceRequest } from '../../service-requests/entities/service-request.entity'; // For future relations
 
 @Entity('users')
 export class User {
@@ -22,4 +25,19 @@ export class User {
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   updated_at: Date;
+
+  // Inverse side of the relation from Memoir.user
+  @OneToMany(() => Memoir, (memoir) => memoir.user)
+  memoirs: Memoir[];
+
+  // If you also want to link collaborations directly from user:
+  // @OneToMany(() => MemoirCollaboration, (collaboration) => collaboration.collaborator)
+  // collaborationsAsCollaborator: MemoirCollaboration[];
+
+  // @OneToMany(() => MemoirCollaboration, (collaboration) => collaboration.invitedByUser)
+  // collaborationsInvitedByMe: MemoirCollaboration[];
+
+  // If you also want to link service requests directly from user:
+  // @OneToMany(() => ServiceRequest, (request) => request.user)
+  // serviceRequests: ServiceRequest[];
 }

@@ -6,11 +6,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { MemoirsModule } from './memoirs/memoirs.module'; // Added import for MemoirsModule
+import { MemoirsModule } from './memoirs/memoirs.module';
+import { ServiceRequestsModule } from './service-requests/service-requests.module'; // Already present
+import { CollaborationsModule } from './collaborations/collaborations.module'; // Added import
 
 import { User } from './users/entities/user.entity';
-import { Memoir } from './memoirs/entities/memoir.entity'; // Added import for Memoir
-import { Chapter } from './memoirs/entities/chapter.entity'; // Added import for Chapter
+import { Memoir } from './memoirs/entities/memoir.entity';
+import { Chapter } from './memoirs/entities/chapter.entity';
+import { MemoirCollaboration } from './memoirs/entities/memoir-collaboration.entity';
+import { ServiceRequest } from './service-requests/entities/service-request.entity'; // Added import
 
 @Module({
   imports: [
@@ -22,13 +26,15 @@ import { Chapter } from './memoirs/entities/chapter.entity'; // Added import for
     TypeOrmModule.forRoot({
       type: 'sqlite',
       database: 'db.sqlite',
-      entities: [User, Memoir, Chapter],
+      entities: [User, Memoir, Chapter, MemoirCollaboration, ServiceRequest], // Added ServiceRequest
       synchronize: true, // Dev only!
       // logging: true,
     }),
     UsersModule,
     AuthModule,
     MemoirsModule,
+    ServiceRequestsModule,
+    CollaborationsModule, // Added CollaborationsModule
   ],
   controllers: [AppController],
   providers: [AppService],

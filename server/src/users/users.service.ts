@@ -33,13 +33,22 @@ export class UsersService {
     return this.userRepository.save(newUser);
   }
 
-  // Example: Update user details (e.g., name, avatar)
-  // async update(id: number, updateUserDto: Partial<User>): Promise<User> {
-  //   const user = await this.findById(id);
-  //   if (!user) {
-  //     throw new NotFoundException(`User with ID ${id} not found`);
-  //   }
-  //   Object.assign(user, updateUserDto);
-  //   return this.userRepository.save(user);
-  // }
+  async updateProfile(id: number, updateUserProfileDto: Partial<User>): Promise<User> {
+    // `Partial<User>` is used here because UpdateUserProfileDto only defines name and avatar_url
+    // but this method could be more generic if needed. For now, it maps directly.
+    const user = await this.findById(id);
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    // Update only fields present in DTO
+    if (updateUserProfileDto.name !== undefined) {
+        user.name = updateUserProfileDto.name;
+    }
+    if (updateUserProfileDto.avatar_url !== undefined) {
+        user.avatar_url = updateUserProfileDto.avatar_url;
+    }
+
+    return this.userRepository.save(user);
+  }
 }

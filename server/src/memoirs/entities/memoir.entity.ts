@@ -29,11 +29,11 @@ export class Memoir {
   // and might need adjustments in UsersModule and MemoirsModule to avoid circular deps
   // if not handled carefully (e.g. via forwardRef).
   // For now, we'll keep it simple with userId, but include the commented code as a reference.
-  /*
-  @ManyToOne(() => User, (user) => user.memoirs, { onDelete: 'CASCADE' })
+
+  @ManyToOne(() => User, (user) => user.memoirs, { onDelete: 'CASCADE', eager: false }) // eager: false to not always load it unless specified
   @JoinColumn({ name: 'userId' }) // This explicitly defines the FK column name
   user: User;
-  */
+
 
   @OneToMany(() => Chapter, (chapter) => chapter.memoir, { cascade: true, eager: false }) // cascade for easier creation/deletion of chapters with memoir
   chapters: Chapter[];

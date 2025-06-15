@@ -1,10 +1,10 @@
 import {
   Controller,
   Post,
-  Get, // Added Get
-  Patch, // Added Patch
-  Delete, // Added Delete
-  Param, // Added Param
+  Get,
+  Patch,
+  Delete,
+  Param,
   UploadedFile,
   UseInterceptors,
   UseGuards,
@@ -16,9 +16,12 @@ import {
   Body,
   ValidationPipe,
   UsePipes,
-  ParseUUIDPipe, // For validating UUID parameters
-  HttpCode, // For setting status codes like 204
-  HttpStatus, // For HttpStatus enum
+  ParseUUIDPipe,
+  HttpCode,
+  HttpStatus,
+  Query, // Added Query decorator
+  DefaultValuePipe, // For default pagination values
+  ParseIntPipe, // For parsing pagination values
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MemoirsService } from './memoirs.service';
@@ -30,8 +33,12 @@ import { CreateMemoirDto } from './dto/create-memoir.dto';
 import { UpdateMemoirDto } from './dto/update-memoir.dto';
 import { CreateChapterDto } from './dto/create-chapter.dto';
 import { UpdateChapterDto } from './dto/update-chapter.dto';
+import { InviteCollaboratorDto } from './dto/invite-collaborator.dto';
+import { MemoirCollaboration } from './entities/memoir-collaboration.entity';
 import { Memoir } from './entities/memoir.entity';
 import { Chapter } from './entities/chapter.entity';
+import { PublicMemoirSummaryDto } from './dto/public-memoir-summary.dto'; // Added
+import { PublicMemoirDetailDto } from './dto/public-memoir-detail.dto'; // Added
 import { Express } from 'express';
 
 interface AuthenticatedRequest extends Request {
@@ -42,14 +49,38 @@ interface AuthenticatedRequest extends Request {
 }
 
 @Controller('memoirs')
-@UseGuards(JwtAuthGuard) // Apply guard to all routes in this controller
+// @UseGuards(JwtAuthGuard) // Removed class-level guard, will apply individually
 export class MemoirsController {
   private readonly logger = new Logger(MemoirsController.name);
 
   constructor(private readonly memoirsService: MemoirsService) {}
 
-  // == STT and LLM Endpoints (from previous subtasks) ==
+  // == Public Community Endpoints ==
+  @Get('public')
+  async getPublicMemoirs(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ): Promise<{ data: PublicMemoirSummaryDto[]; total: number; page: number; limit: number }> {
+    const result = await this.memoirsService.getPublicMemoirs({ page, limit });
+    return {
+      data: result.data.map(memoir => new PublicMemoirSummaryDto(memoir)),
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+    };
+  }
+
+  @Get('public/:memoirId')
+  async getPublicMemoirById(
+    @Param('memoirId', ParseUUIDPipe) memoirId: string,
+  ): Promise<PublicMemoirDetailDto> {
+    const memoir = await this.memoirsService.getPublicMemoirById(memoirId);
+    return new PublicMemoirDetailDto(memoir); // DTO handles NotFoundException if memoir is null
+  }
+
+  // == STT and LLM Endpoints (Authenticated) ==
   @Post('transcribe')
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async transcribeAudio(
     @UploadedFile(
@@ -67,6 +98,7 @@ export class MemoirsController {
   }
 
   @Post('generate-chapters')
+  @UseGuards(JwtAuthGuard)
   @UsePipes(new ValidationPipe({ transform: true }))
   async generateChapters(
     @Body() generateChaptersDto: GenerateChaptersRequestDto,
@@ -78,8 +110,9 @@ export class MemoirsController {
     return this.memoirsService.generateChapterOutline(generateChaptersDto.transcribedText);
   }
 
-  // == Memoir CRUD Endpoints ==
+  // == Memoir CRUD Endpoints (Authenticated) ==
   @Post()
+  @UseGuards(JwtAuthGuard)
   @UsePipes(new ValidationPipe({ transform: true }))
   async createMemoir(
     @Body() createMemoirDto: CreateMemoirDto,
@@ -88,21 +121,24 @@ export class MemoirsController {
     return this.memoirsService.createMemoir(createMemoirDto, req.user.userId);
   }
 
-  @Get()
+  @Get() // This GET /memoirs is for the authenticated user's memoirs
+  @UseGuards(JwtAuthGuard)
   async findAllMemoirsForUser(@Req() req: AuthenticatedRequest): Promise<Memoir[]> {
     return this.memoirsService.findAllMemoirsForUser(req.user.userId);
   }
 
+  // This GET /memoirs/:memoirId is for the authenticated user's specific memoir
   @Get(':memoirId')
+  @UseGuards(JwtAuthGuard)
   async findMemoirByIdForUser(
     @Param('memoirId', ParseUUIDPipe) memoirId: string,
     @Req() req: AuthenticatedRequest,
   ): Promise<Memoir> {
-    // Optionally load chapters here, or have a separate endpoint/query param
-    return this.memoirsService.findMemoirByIdForUser(memoirId, req.user.userId, ['chapters']);
+    return this.memoirsService.findMemoirByIdForUser(memoirId, req.user.userId, ['chapters', 'user']); // Also load user for consistency if needed by client
   }
 
   @Patch(':memoirId')
+  @UseGuards(JwtAuthGuard)
   @UsePipes(new ValidationPipe({ transform: true, skipMissingProperties: true }))
   async updateMemoir(
     @Param('memoirId', ParseUUIDPipe) memoirId: string,
@@ -113,7 +149,8 @@ export class MemoirsController {
   }
 
   @Delete(':memoirId')
-  @HttpCode(HttpStatus.NO_CONTENT) // Return 204 on successful deletion
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async deleteMemoir(
     @Param('memoirId', ParseUUIDPipe) memoirId: string,
     @Req() req: AuthenticatedRequest,
@@ -121,8 +158,9 @@ export class MemoirsController {
     return this.memoirsService.deleteMemoir(memoirId, req.user.userId);
   }
 
-  // == Chapter CRUD Endpoints (nested under memoirs) ==
+  // == Chapter CRUD Endpoints (Authenticated) ==
   @Post(':memoirId/chapters')
+  @UseGuards(JwtAuthGuard)
   @UsePipes(new ValidationPipe({ transform: true }))
   async createChapter(
     @Param('memoirId', ParseUUIDPipe) memoirId: string,
@@ -133,6 +171,7 @@ export class MemoirsController {
   }
 
   @Get(':memoirId/chapters')
+  @UseGuards(JwtAuthGuard)
   async findChaptersByMemoir(
     @Param('memoirId', ParseUUIDPipe) memoirId: string,
     @Req() req: AuthenticatedRequest,
@@ -141,6 +180,7 @@ export class MemoirsController {
   }
 
   @Get(':memoirId/chapters/:chapterId')
+  @UseGuards(JwtAuthGuard)
   async findChapterById(
     @Param('memoirId', ParseUUIDPipe) memoirId: string,
     @Param('chapterId', ParseUUIDPipe) chapterId: string,
@@ -150,6 +190,7 @@ export class MemoirsController {
   }
 
   @Patch(':memoirId/chapters/:chapterId')
+  @UseGuards(JwtAuthGuard)
   @UsePipes(new ValidationPipe({ transform: true, skipMissingProperties: true }))
   async updateChapter(
     @Param('memoirId', ParseUUIDPipe) memoirId: string,
@@ -161,6 +202,7 @@ export class MemoirsController {
   }
 
   @Delete(':memoirId/chapters/:chapterId')
+  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteChapter(
     @Param('memoirId', ParseUUIDPipe) memoirId: string,
@@ -168,5 +210,26 @@ export class MemoirsController {
     @Req() req: AuthenticatedRequest,
   ): Promise<void> {
     return this.memoirsService.deleteChapter(chapterId, memoirId, req.user.userId);
+  }
+
+  // == Collaboration Routes (Authenticated) ==
+  @Post(':memoirId/collaborators')
+  @UseGuards(JwtAuthGuard)
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async inviteCollaborator(
+    @Param('memoirId', ParseUUIDPipe) memoirId: string,
+    @Body() inviteCollaboratorDto: InviteCollaboratorDto,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<MemoirCollaboration> {
+    return this.memoirsService.inviteCollaborator(memoirId, inviteCollaboratorDto, req.user.userId);
+  }
+
+  @Get(':memoirId/collaborators')
+  @UseGuards(JwtAuthGuard)
+  async getCollaboratorsForMemoir(
+    @Param('memoirId', ParseUUIDPipe) memoirId: string,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<MemoirCollaboration[]> {
+    return this.memoirsService.getCollaboratorsForMemoir(memoirId, req.user.userId);
   }
 }
