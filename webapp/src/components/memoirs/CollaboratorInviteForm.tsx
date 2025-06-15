@@ -1,15 +1,14 @@
-// Placeholder for CollaboratorInviteForm.tsx
 import React, { useState } from 'react';
-
-type PermissionLevel = 'view' | 'comment' | 'edit';
+import { CollaborationRole, InviteCollaboratorPayload } from '../../services/api'; // Import new types
 
 interface CollaboratorInviteFormProps {
-  onSubmit: (inviteeEmail: string, permission: PermissionLevel) => Promise<void>;
+  // onSubmit now matches the structure of api.inviteCollaborator payload, memoirId is handled by parent
+  onSubmit: (payload: Omit<InviteCollaboratorPayload, 'memoirId'>) => Promise<void>;
 }
 
 const CollaboratorInviteForm: React.FC<CollaboratorInviteFormProps> = ({ onSubmit }) => {
-  const [inviteeEmail, setInviteeEmail] = useState('');
-  const [permission, setPermission] = useState<PermissionLevel>('view');
+  const [collaboratorPhone, setCollaboratorPhone] = useState('');
+  const [role, setRole] = useState<CollaborationRole>(CollaborationRole.VIEWER); // Use enum
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -19,22 +18,22 @@ const CollaboratorInviteForm: React.FC<CollaboratorInviteFormProps> = ({ onSubmi
     setError(null);
     setSuccessMessage(null);
 
-    if (!inviteeEmail.trim()) {
-      setError('Email or username is required.');
+    if (!collaboratorPhone.trim()) {
+      setError('Collaborator phone number is required.');
       return;
     }
-    // Basic email validation regex (optional, can be more complex)
-    if (!/\S+@\S+\.\S+/.test(inviteeEmail)) {
-        setError('Please enter a valid email address.');
+    // Basic phone validation (example: very simple, consider a library for robust validation)
+    if (!/^\+?[0-9\s-()]{7,20}$/.test(collaboratorPhone)) {
+        setError('Please enter a valid phone number (e.g., +1234567890).');
         return;
     }
 
     setIsSubmitting(true);
     try {
-      await onSubmit(inviteeEmail, permission);
-      setSuccessMessage(`Invitation sent to ${inviteeEmail} with ${permission} permission.`);
-      setInviteeEmail(''); // Reset form
-      setPermission('view');
+      await onSubmit({ collaboratorPhone, role });
+      setSuccessMessage(`Invitation sent to ${collaboratorPhone} with ${role} role.`);
+      setCollaboratorPhone(''); // Reset form
+      setRole(CollaborationRole.VIEWER);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send invitation.');
     } finally {
@@ -44,40 +43,43 @@ const CollaboratorInviteForm: React.FC<CollaboratorInviteFormProps> = ({ onSubmi
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {error && <p className="text-red-500 text-sm p-3 bg-red-100 rounded-md">{error}</p>}
-      {successMessage && <p className="text-green-500 text-sm p-3 bg-green-100 rounded-md">{successMessage}</p>}
+      {error && <p className="text-red-500 text-sm p-3 bg-red-100 dark:bg-red-900 dark:text-red-300 rounded-md">{error}</p>}
+      {successMessage && <p className="text-green-500 text-sm p-3 bg-green-100 dark:bg-green-900 dark:text-green-300 rounded-md">{successMessage}</p>}
 
       <div>
-        <label htmlFor="inviteeEmail" className="block text-sm font-medium text-gray-700">
-          User's Email
+        <label htmlFor="collaboratorPhone" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          Collaborator's Phone Number
         </label>
         <input
-          type="email"
-          id="inviteeEmail"
-          name="inviteeEmail"
-          value={inviteeEmail}
-          onChange={(e) => setInviteeEmail(e.target.value)}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          placeholder="Enter email to invite"
+          type="tel" // Changed type to tel
+          id="collaboratorPhone"
+          name="collaboratorPhone"
+          value={collaboratorPhone}
+          onChange={(e) => setCollaboratorPhone(e.target.value)}
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+          placeholder="Enter phone number to invite"
           disabled={isSubmitting}
         />
       </div>
 
       <div>
-        <label htmlFor="permission" className="block text-sm font-medium text-gray-700">
-          Permission Level
+        <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          Role
         </label>
         <select
-          id="permission"
-          name="permission"
-          value={permission}
-          onChange={(e) => setPermission(e.target.value as PermissionLevel)}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          id="role"
+          name="role"
+          value={role}
+          onChange={(e) => setRole(e.target.value as CollaborationRole)}
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           disabled={isSubmitting}
         >
-          <option value="view">View</option>
-          <option value="comment">Comment</option>
-          <option value="edit">Edit</option>
+          {/* Iterate over CollaborationRole enum values */}
+          {Object.values(CollaborationRole).map((roleValue) => (
+            <option key={roleValue} value={roleValue}>
+              {roleValue.charAt(0).toUpperCase() + roleValue.slice(1)}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -85,7 +87,7 @@ const CollaboratorInviteForm: React.FC<CollaboratorInviteFormProps> = ({ onSubmi
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400"
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400 dark:disabled:bg-indigo-800"
         >
           {isSubmitting ? 'Sending Invitation...' : 'Send Invitation'}
         </button>

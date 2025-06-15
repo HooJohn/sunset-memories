@@ -1,53 +1,70 @@
-// Placeholder for UserRequestListItem.tsx
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { ServiceRequest } from '../../services/api'; // Assuming this will be defined in api.ts
+// import { Link } from 'react-router-dom'; // For future detail view
+import { ServiceRequest, ServiceRequestStatus, ServiceType } from '../../services/api';
 
 interface UserRequestListItemProps {
   request: ServiceRequest;
 }
 
+// Helper to format enum values to readable strings
+const formatServiceType = (type: ServiceType) => {
+    return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+};
+
+const formatStatus = (status: ServiceRequestStatus) => {
+    return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+};
+
+
 const UserRequestListItem: React.FC<UserRequestListItemProps> = ({ request }) => {
-  const getStatusColor = (status: ServiceRequest['status']) => {
+  const getStatusColor = (status: ServiceRequestStatus) => {
     switch (status) {
-      case 'pending': return 'text-yellow-600 bg-yellow-100';
-      case 'accepted': return 'text-blue-600 bg-blue-100';
-      case 'in-progress': return 'text-indigo-600 bg-indigo-100';
-      case 'completed': return 'text-green-600 bg-green-100';
-      case 'rejected': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case ServiceRequestStatus.PENDING: return 'text-yellow-700 bg-yellow-100 dark:text-yellow-300 dark:bg-yellow-700/30';
+      case ServiceRequestStatus.ACCEPTED: return 'text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-700/30';
+      case ServiceRequestStatus.IN_PROGRESS: return 'text-indigo-700 bg-indigo-100 dark:text-indigo-300 dark:bg-indigo-700/30';
+      case ServiceRequestStatus.COMPLETED: return 'text-green-700 bg-green-100 dark:text-green-300 dark:bg-green-700/30';
+      case ServiceRequestStatus.REJECTED: return 'text-red-700 bg-red-100 dark:text-red-300 dark:bg-red-700/30';
+      default: return 'text-gray-700 bg-gray-100 dark:text-gray-300 dark:bg-gray-700/30';
     }
   };
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-6 border border-gray-200 hover:shadow-lg transition-shadow duration-200">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3">
-        <h3 className="text-xl font-semibold text-indigo-700 mb-2 sm:mb-0">
-          Service: {request.type}
+    <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow duration-200">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+        <h3 className="text-xl font-semibold text-indigo-700 dark:text-indigo-400 mb-2 sm:mb-0">
+          Service: {formatServiceType(request.serviceType)}
         </h3>
-        <span className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(request.status)}`}>
-          Status: {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+        <span className={`px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(request.status)}`}>
+          {formatStatus(request.status)}
         </span>
       </div>
-      <p className="text-gray-700 mb-2">
-        <strong className="font-medium">Description:</strong> {request.description.substring(0, 100)}{request.description.length > 100 ? '...' : ''}
+      <p className="text-gray-700 dark:text-gray-300 mb-2">
+        <strong className="font-medium text-gray-900 dark:text-gray-100">Details:</strong> {request.details.substring(0, 150)}{request.details.length > 150 ? '...' : ''}
       </p>
-      <p className="text-gray-700 mb-2">
-        <strong className="font-medium">Address:</strong> {request.address}
+      {request.address && (
+        <p className="text-gray-700 dark:text-gray-300 mb-2">
+            <strong className="font-medium text-gray-900 dark:text-gray-100">Address:</strong> {request.address}
+        </p>
+      )}
+      {request.contactPhone && (
+        <p className="text-gray-700 dark:text-gray-300 mb-2">
+            <strong className="font-medium text-gray-900 dark:text-gray-100">Contact:</strong> {request.contactPhone}
+        </p>
+      )}
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+        Requested on: {new Date(request.created_at).toLocaleDateString()}
+        {request.preferredDate && ` | Preferred: ${new Date(request.preferredDate).toLocaleDateString()}`}
       </p>
-      <p className="text-sm text-gray-500 mb-4">
-        Requested on: {new Date(request.createdAt).toLocaleDateString()}
-        {request.preferredDate && ` | Preferred Date: ${new Date(request.preferredDate).toLocaleDateString()}`}
-      </p>
-      <div className="text-right">
-        {/* Link to a detailed view page - to be implemented later */}
-        {/* <Link
+      <div className="text-right mt-4">
+        {/* Future link to a detailed view page:
+        <Link
           to={`/service-requests/${request.id}`}
-          className="text-indigo-600 hover:text-indigo-800 hover:underline font-medium"
+          className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 hover:underline font-medium text-sm"
         >
           View Details
-        </Link> */}
-         <p className="text-xs text-gray-400">Request ID: {request.id}</p>
+        </Link>
+        */}
+         <p className="text-xs text-gray-400 dark:text-gray-500">Request ID: {request.id}</p>
       </div>
     </div>
   );

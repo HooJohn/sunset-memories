@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { transcribeAudio } from '../../services/api'; // Import the actual API function
 
 interface VoiceRecorderProps {
   onTranscriptionComplete: (transcribedText: string) => void;
@@ -16,10 +17,13 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscriptionComplete }
   const handleStartRecording = async () => {
     setStatus('recording');
     setStatusMessage('Requesting microphone permission...');
-    audioChunksRef.current = []; // Clear previous chunks
+    setAudioBlob(null); // Clear previous audio blob
+    audioChunksRef.current = [];
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Ensure the stream is using a common codec if possible, though browser usually handles this.
+      // Options for MediaRecorder can be specified here if needed.
       mediaRecorderRef.current = new MediaRecorder(stream);
 
       mediaRecorderRef.current.ondataavailable = (event) => {
@@ -30,28 +34,24 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscriptionComplete }
 
       mediaRecorderRef.current.onstart = () => {
         setStatusMessage('Recording in progress... Click "Stop Recording" to finish.');
-        console.log('Recording started successfully.');
       };
 
       mediaRecorderRef.current.onstop = async () => {
-        const completeBlob = new Blob(audioChunksRef.current, { type: audioChunksRef.current[0]?.type || 'audio/webm' });
+        const completeBlob = new Blob(audioChunksRef.current, { type: 'audio/webm;codecs=opus' }); // Specify MIME type
         setAudioBlob(completeBlob);
         setStatus('stopped');
-        setStatusMessage('Recording stopped. Simulating transcription...');
-        console.log('Recording stopped. Blob created:', completeBlob);
+        setStatusMessage('Recording stopped. Processing transcription...');
 
-        // Clean up the stream tracks
-        stream.getTracks().forEach(track => track.stop());
+        stream.getTracks().forEach(track => track.stop()); // Clean up stream tracks
 
-        // Simulate STT service call
-        await simulateSTT(completeBlob);
+        // Call actual STT service
+        await processTranscription(completeBlob);
       };
 
       mediaRecorderRef.current.onerror = (event) => {
         console.error('MediaRecorder error:', event);
         setStatus('error');
-        setStatusMessage('Error during recording. Please check permissions or console.');
-         // Clean up the stream tracks
+        setStatusMessage(`Error during recording: ${(event as any)?.error?.message || 'Unknown error'}`);
         stream.getTracks().forEach(track => track.stop());
       };
 
@@ -63,7 +63,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscriptionComplete }
       if (err instanceof Error && err.name === "NotAllowedError") {
         setStatusMessage('Microphone permission denied. Please enable it in your browser settings.');
       } else {
-        setStatusMessage('Error accessing microphone. See console for details.');
+        setStatusMessage(err instanceof Error ? err.message : 'Error accessing microphone.');
       }
     }
   };
@@ -71,24 +71,30 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscriptionComplete }
   const handleStopRecording = () => {
     if (mediaRecorderRef.current && status === 'recording') {
       mediaRecorderRef.current.stop();
-      // onstop handler will take over
     }
   };
 
-  const simulateSTT = async (blob: Blob) => {
-    if (!blob) return;
+  const processTranscription = async (blob: Blob | null) => {
+    if (!blob) {
+      setStatus('error');
+      setStatusMessage('No audio data to transcribe.');
+      return;
+    }
     setStatus('transcribing');
-    setStatusMessage('Transcribing audio... (simulation)');
-    console.log('Simulating STT call with audio blob:', blob);
-
-    // Simulate network delay and STT processing
-    await new Promise(resolve => setTimeout(resolve, 2500));
-
-    const mockTranscribedText = `This is a mock transcribed text from the recorded audio. It includes details about early life, focusing on key events and experiences. Then it moves on to career development, highlighting significant achievements and challenges faced along the way. Finally, it touches upon personal reflections and future aspirations.`;
-
-    console.log('Mock transcription complete:', mockTranscribedText);
-    onTranscriptionComplete(mockTranscribedText);
-    setStatusMessage('Transcription complete! Outline generation can now begin.');
+    setStatusMessage('Transcribing audio, please wait...');
+    try {
+      // Convert Blob to File, as backend endpoint might expect a File object
+      const audioFile = new File([blob], "audio_recording.webm", { type: blob.type });
+      const response = await transcribeAudio(audioFile); // Use actual API
+      onTranscriptionComplete(response.transcription);
+      setStatusMessage('Transcription complete! Outline generation can now begin.');
+      // Optionally keep 'transcribing' status until next step, or set to 'stopped' or a new 'transcribed' status
+      setStatus('stopped'); // Or a new status like 'transcribed'
+    } catch (error) {
+      console.error('Transcription failed:', error);
+      setStatus('error');
+      setStatusMessage(error instanceof Error ? `Transcription failed: ${error.message}` : 'Transcription failed.');
+    }
   };
 
   const canRecord = !!navigator.mediaDevices && !!navigator.mediaDevices.getUserMedia;
@@ -103,9 +109,10 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscriptionComplete }
 
   return (
     <div className="p-4 border border-gray-300 rounded-lg text-center">
-      <p className="mb-4 text-gray-700 min-h-[40px]">{statusMessage}</p>
-      {status === 'idle' || status === 'error' || status === 'stopped' && !audioBlob ? (
+      <p className="mb-4 text-gray-700 dark:text-gray-300 min-h-[40px]">{statusMessage}</p>
+      {status === 'idle' || status === 'error' || (status === 'stopped' && !audioBlob) ? (
         <button
+          type="button"
           onClick={handleStartRecording}
           className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:bg-gray-400"
           disabled={status === 'recording' || status === 'transcribing'}
@@ -115,6 +122,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscriptionComplete }
       ) : null}
       {status === 'recording' ? (
         <button
+          type="button"
           onClick={handleStopRecording}
           className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
         >
@@ -122,10 +130,15 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscriptionComplete }
         </button>
       ) : null}
 
-      {audioBlob && (status === 'stopped' || status === 'transcribing') && (
+      {audioBlob && (status === 'stopped' || status === 'transcribing' || status === 'error' && audioBlob) && (
         <div className="mt-4">
-          <p className="text-sm text-gray-600">Recorded audio:</p>
-          <audio controls src={URL.createObjectURL(audioBlob)} className="w-full max-w-xs mx-auto" />
+          <p className="text-sm text-gray-600 dark:text-gray-400">Recorded audio preview:</p>
+          <audio controls src={URL.createObjectURL(audioBlob)} className="w-full max-w-xs mx-auto mt-2" />
+        </div>
+      )}
+       {status === 'transcribing' && (
+        <div className="mt-4 w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+            <div className="bg-blue-600 h-2.5 rounded-full animate-pulse" style={{width: "100%"}}></div>
         </div>
       )}
     </div>

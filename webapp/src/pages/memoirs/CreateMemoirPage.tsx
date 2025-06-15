@@ -1,10 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import VoiceRecorder from '../../components/memoirs/VoiceRecorder';
-import ChapterOutline, { Chapter } from '../../components/memoirs/ChapterOutline';
+import ChapterOutline, { Chapter } from '../../components/memoirs/ChapterOutline'; // Ensure Chapter from ChapterOutline matches api.Chapter or is compatible
 import RichTextEditor from '../../components/memoirs/RichTextEditor';
 import { Editor } from '@tiptap/react';
-import { createMemoir, MemoirData } from '../../services/api';
+import { createMemoir, CreateMemoirPayload, Chapter as ApiChapter } from '../../services/api'; // Using CreateMemoirPayload
 
 enum CreationStep {
   Recording,
@@ -19,40 +19,40 @@ const CreateMemoirPage: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<CreationStep>(CreationStep.Recording);
   const [memoirTitle, setMemoirTitle] = useState<string>('');
   const [transcribedText, setTranscribedText] = useState<string | null>(null);
-  const [generatedOutline, setGeneratedOutline] = useState<Chapter[] | null>(null);
-  const [editorContent, setEditorContent] = useState<string>('');
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const [newMemoirId, setNewMemoirId] = useState<string | null>(null);
+  const [generatedOutline, setGeneratedOutline] = useState<ApiChapter[] | null>(null); // Store as ApiChapter[]
+  const [editorInitialContent, setEditorInitialContent] = useState<string>(''); // For TipTap
 
   const editorRef = useRef<Editor | null>(null);
   const navigate = useNavigate();
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [newMemoirId, setNewMemoirId] = useState<string | null>(null);
 
   const handleTranscriptionComplete = (text: string) => {
     setTranscribedText(text);
     setCurrentStep(CreationStep.OutlineGeneration);
   };
 
-  const handleOutlineGenerated = (outline: Chapter[]) => {
+  const handleOutlineGenerated = (outline: ApiChapter[]) => { // Expecting ApiChapter[]
     setGeneratedOutline(outline);
     let htmlContent = '';
     if (outline.length > 0 && !memoirTitle) {
-      // Auto-fill title from first chapter if not already set by user
       setMemoirTitle(outline[0].title);
     }
     outline.forEach(chapter => {
-      htmlContent += `<h2>${chapter.title}</h2>`;
+      htmlContent += `<h2>${chapter.title}</h2>\n`; // Added newline for better raw HTML readability
       if (chapter.summary) {
-        htmlContent += `<p>${chapter.summary}</p>`;
+        htmlContent += `<p>${chapter.summary}</p>\n`;
       }
-      htmlContent += `<p></p>`;
+      htmlContent += `<p></p>\n`; // Empty paragraph for writing space
     });
-    setEditorContent(htmlContent);
+    setEditorInitialContent(htmlContent);
     setCurrentStep(CreationStep.Editing);
   };
 
-  const handleEditorContentChange = (html: string) => {
-    setEditorContent(html);
-  };
+  // This callback is for RichTextEditor's onContentChange, if we needed to sync state continuously.
+  // const handleEditorContentChange = (html: string) => {
+  //   // setEditorContent(html); // Not strictly needed if we get content from ref on save
+  // };
 
   const handleSaveMemoir = async () => {
     if (!editorRef.current) {
@@ -61,10 +61,7 @@ const CreateMemoirPage: React.FC = () => {
       return;
     }
     if (!memoirTitle.trim()) {
-      setSaveError("Memoir title is required.");
-      // Optionally, stay in Editing step but show error near title input
-      // For now, just an alert or simple error display.
-      alert("Memoir title is required.");
+      alert("Memoir title is required."); // Simple alert, could be improved
       return;
     }
 
@@ -72,22 +69,18 @@ const CreateMemoirPage: React.FC = () => {
     setCurrentStep(CreationStep.Saving);
     setSaveError(null);
 
-    const memoirDataToSave: MemoirData = {
+    const memoirPayload: CreateMemoirPayload = {
       title: memoirTitle,
       content_html: currentHtmlContent,
-      transcribed_text: transcribedText,
-      // Backend expects chapters as JSON string or structured object.
-      // For now, let's match ChapterData from api.ts.
-      chapters: generatedOutline?.map(ch => ({ title: ch.title, summary: ch.summary })) || [],
+      transcribed_text: transcribedText || undefined, // Send undefined if null
+      chapters: generatedOutline || undefined, // Send the structured outline
     };
 
     try {
-      const savedMemoir = await createMemoir(memoirDataToSave);
-      setNewMemoirId(savedMemoir.id); // Assuming createMemoir returns the full memoir including ID
+      const savedMemoir = await createMemoir(memoirPayload);
+      setNewMemoirId(savedMemoir.id);
       setCurrentStep(CreationStep.Saved);
-      // Redirect after a short delay or on user action
       setTimeout(() => {
-        // Redirect to the edit page of the newly created memoir, or profile/home
         navigate(savedMemoir.id ? `/memoirs/edit/${savedMemoir.id}` : '/profile');
       }, 2000);
     } catch (error) {
@@ -98,13 +91,13 @@ const CreateMemoirPage: React.FC = () => {
   };
 
   const renderStepContent = () => {
-    // Simple error display for now
     if (currentStep === CreationStep.Error) {
       return (
-        <div className="p-6 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-            <h2 className="text-2xl font-semibold mb-2">Error</h2>
+        <div className="p-6 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 rounded-lg">
+            <h2 className="text-2xl font-semibold mb-2">Error Saving Memoir</h2>
             <p>{saveError || "An unexpected error occurred."}</p>
             <button
+                type="button"
                 onClick={() => setCurrentStep(CreationStep.Editing)}
                 className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             >
@@ -114,52 +107,48 @@ const CreateMemoirPage: React.FC = () => {
       );
     }
     if (currentStep === CreationStep.Saving) {
-        return <div className="text-center p-10"><p className="text-xl text-blue-600 animate-pulse">Saving your memoir...</p></div>;
+        return <div className="text-center p-10"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div><p className="text-xl text-blue-600 dark:text-blue-400 mt-4">Saving your memoir...</p></div>;
     }
     if (currentStep === CreationStep.Saved) {
         return (
             <div className="text-center p-10">
-                <p className="text-xl text-green-600">Memoir saved successfully!</p>
-                <p className="mt-2">Redirecting to your memoir shortly...</p>
-                {newMemoirId && <p className="mt-1 text-sm">Memoir ID: {newMemoirId}</p>}
+                <p className="text-xl text-green-600 dark:text-green-400">Memoir saved successfully!</p>
+                <p className="mt-2 dark:text-gray-300">Redirecting to your memoir shortly...</p>
+                {newMemoirId && <p className="mt-1 text-sm dark:text-gray-400">Memoir ID: {newMemoirId}</p>}
             </div>
         );
     }
-    // Default layout for creation steps
     return (
         <>
-            {/* Step 1: Voice Recording */}
-            <section className={`p-6 bg-white shadow-lg rounded-lg ${currentStep !== CreationStep.Recording ? 'opacity-50 blur-sm' : ''}`}>
-                <h2 className="text-2xl font-semibold mb-4 text-indigo-700">Step 1: Record Your Story</h2>
+            <section className={`p-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg ${currentStep !== CreationStep.Recording ? 'opacity-60 blur-[2px]' : ''}`}>
+                <h2 className="text-2xl font-semibold mb-4 text-indigo-700 dark:text-indigo-400">Step 1: Record Your Story</h2>
                 {currentStep === CreationStep.Recording ? (
                 <VoiceRecorder onTranscriptionComplete={handleTranscriptionComplete} />
                 ) : (
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-300">
                     {transcribedText ? "Recording complete. Proceeding to outline..." : "Waiting to start recording..."}
                 </p>
                 )}
             </section>
 
-            {/* Step 2: Chapter Outline Generation */}
-            <section className={`p-6 bg-white shadow-lg rounded-lg mt-8 ${currentStep !== CreationStep.OutlineGeneration ? 'opacity-50 blur-sm' : ''} ${currentStep < CreationStep.OutlineGeneration ? 'hidden' : ''}`}>
-                <h2 className="text-2xl font-semibold mb-4 text-indigo-700">Step 2: Review Chapter Outline</h2>
+            <section className={`p-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg mt-8 ${currentStep !== CreationStep.OutlineGeneration ? 'opacity-60 blur-[2px]' : ''} ${currentStep < CreationStep.OutlineGeneration ? 'hidden' : ''}`}>
+                <h2 className="text-2xl font-semibold mb-4 text-indigo-700 dark:text-indigo-400">Step 2: Review Chapter Outline</h2>
                 {currentStep === CreationStep.OutlineGeneration ? (
                 <ChapterOutline
                     transcribedText={transcribedText}
                     onOutlineGenerated={handleOutlineGenerated}
                 />
                 ) : (
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-300">
                     {generatedOutline ? "Chapter outline generated. Proceeding to editor..." : transcribedText ? "Generating outline..." : "Waiting for recording to complete..."}
                 </p>
                 )}
             </section>
 
-            {/* Step 3: Rich Text Editing */}
-            <section className={`p-6 bg-white shadow-lg rounded-lg mt-8 ${currentStep < CreationStep.Editing ? 'hidden' : ''}`}>
-                <h2 className="text-2xl font-semibold mb-4 text-indigo-700">Step 3: Write and Edit Your Memoir</h2>
+            <section className={`p-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg mt-8 ${currentStep < CreationStep.Editing ? 'hidden' : ''}`}>
+                <h2 className="text-2xl font-semibold mb-4 text-indigo-700 dark:text-indigo-400">Step 3: Write and Edit Your Memoir</h2>
                 <div className="mb-6">
-                    <label htmlFor="memoirTitle" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="memoirTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Memoir Title
                     </label>
                     <input
@@ -169,20 +158,21 @@ const CreateMemoirPage: React.FC = () => {
                         value={memoirTitle}
                         onChange={(e) => setMemoirTitle(e.target.value)}
                         placeholder="Enter your memoir title"
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        disabled={currentStep > CreationStep.Editing}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                        disabled={currentStep > CreationStep.Editing || currentStep === CreationStep.Saving}
                     />
                 </div>
                 <RichTextEditor
-                    initialContent={editorContent}
-                    onContentChange={handleEditorContentChange}
+                    initialContent={editorInitialContent}
+                    onContentChange={() => {}} // Not strictly needed if getting content from ref
                     editorRef={editorRef}
                 />
                 <div className="mt-6 text-right">
                     <button
+                    type="button"
                     onClick={handleSaveMemoir}
                     disabled={currentStep !== CreationStep.Editing}
-                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:bg-gray-400"
+                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:bg-gray-400 dark:disabled:bg-gray-600"
                     >
                     Save Memoir
                     </button>
@@ -192,10 +182,9 @@ const CreateMemoirPage: React.FC = () => {
     );
   }
 
-
   return (
     <div className="container mx-auto p-4 space-y-8">
-      <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Create New Memoir</h1>
+      <h1 className="text-3xl font-bold mb-6 text-center text-gray-800 dark:text-gray-200">Create New Memoir</h1>
       {renderStepContent()}
     </div>
   );

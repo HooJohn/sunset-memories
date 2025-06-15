@@ -1,28 +1,27 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, FormEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import RichTextEditor from '../../components/memoirs/RichTextEditor';
 import { Editor } from '@tiptap/react';
-import { getMemoirById, updateMemoir, MemoirData, ChapterData } from '../../services/api'; // Assuming api.ts will export these
+import { getMemoirById, updateMemoir, Memoir, UpdateMemoirPayload, Chapter as ApiChapter } from '../../services/api';
 
 type EditMemoirStatus = 'loading' | 'loaded' | 'editing' | 'saving' | 'saved' | 'error';
 
 const EditMemoirPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id: memoirId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const editorRef = useRef<Editor | null>(null);
 
   const [status, setStatus] = useState<EditMemoirStatus>('loading');
   const [memoirTitle, setMemoirTitle] = useState<string>('');
-  // content_html is the source of truth for editor, initialContent is just for first load
   const [editorInitialContent, setEditorInitialContent] = useState<string>('');
+  const [isPublic, setIsPublic] = useState<boolean>(false);
+  const [chapters, setChapters] = useState<ApiChapter[] | null | undefined>(null); // Store chapters
+
   const [apiError, setApiError] = useState<string | null>(null);
-
-  // Store the full memoir data if needed, e.g., to resend chapters or transcribed_text
-  const [fullMemoirData, setFullMemoirData] = useState<MemoirData | null>(null);
-
+  const [updateSuccess, setUpdateSuccess] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!id) {
+    if (!memoirId) {
       setStatus('error');
       setApiError('No memoir ID provided.');
       return;
@@ -32,16 +31,13 @@ const EditMemoirPage: React.FC = () => {
       setStatus('loading');
       setApiError(null);
       try {
-        const data = await getMemoirById(id); // This function needs to be created in api.ts
+        const data = await getMemoirById(memoirId); // Now calls actual API
         setMemoirTitle(data.title);
-        setEditorInitialContent(data.content_html); // Set initial content for TipTap
-        setFullMemoirData(data); // Store all fetched data
+        setEditorInitialContent(data.content_html || '');
+        setIsPublic(data.is_public || false);
+        setChapters(data.chapters || []); // Store chapters
         setStatus('loaded');
-        // Transition to 'editing' once editor has processed initialContent,
-        // or immediately if editor handles async initialContent well.
-        // For TipTap, useEffect in RichTextEditor handles setting initial content.
-        // We can assume it's ready for editing after 'loaded'.
-        setTimeout(() => setStatus('editing'), 100); // Small delay for editor to possibly initialize
+        setTimeout(() => setStatus('editing'), 50); // Allow editor to initialize with content
 
       } catch (err) {
         console.error('Failed to fetch memoir:', err);
@@ -49,19 +45,12 @@ const EditMemoirPage: React.FC = () => {
         setStatus('error');
       }
     };
-
     fetchMemoir();
-  }, [id]);
+  }, [memoirId]);
 
-  const handleEditorContentChange = (html: string) => {
-    // This function is primarily for RichTextEditor's onContentChange callback.
-    // We don't strictly need to store it in state here if we fetch from editorRef on save,
-    // but it can be useful for auto-save features or debugging.
-    // setContentHtml(html);
-  };
-
-  const handleUpdateMemoir = async () => {
-    if (!id || !editorRef.current) {
+  const handleUpdateMemoir = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!memoirId || !editorRef.current) {
       setApiError('Cannot update: Memoir ID or Editor not available.');
       setStatus('error');
       return;
@@ -73,94 +62,134 @@ const EditMemoirPage: React.FC = () => {
 
     setStatus('saving');
     setApiError(null);
+    setUpdateSuccess(null);
     const currentHtmlContent = editorRef.current.getHTML();
 
-    // Construct the data to send. Only send fields that are meant to be updated.
-    // If backend supports partial updates (PATCH), send only changed fields.
-    // For PUT, typically send the complete resource or fields that define it.
-    const memoirDataToUpdate: MemoirData = {
-      ...fullMemoirData, // Spread existing data to preserve fields like transcribed_text, chapters
+    const memoirPayload: UpdateMemoirPayload = {
       title: memoirTitle,
       content_html: currentHtmlContent,
-      // If chapters or transcribed_text can be modified on this page, update them here too.
-      // For now, assuming only title and content_html are editable on this simplified page.
-      chapters: fullMemoirData?.chapters || [], // Resend existing chapters
-      transcribed_text: fullMemoirData?.transcribed_text || null,
+      is_public: isPublic,
+      chapters: chapters || undefined, // Send chapters back
+      // transcribed_text is usually not updated. If it were, it would be part of fullMemoirData from fetch.
     };
 
     try {
-      await updateMemoir(id, memoirDataToUpdate); // This function needs to be in api.ts
+      const updatedMemoir = await updateMemoir(memoirId, memoirPayload); // Actual API call
+      setMemoirTitle(updatedMemoir.title);
+      setEditorInitialContent(updatedMemoir.content_html || ''); // Update editor if needed, though it should reflect current state
+      editorRef.current?.commands.setContent(updatedMemoir.content_html || '', false); // Force update editor content
+      setIsPublic(updatedMemoir.is_public || false);
+      setChapters(updatedMemoir.chapters || []);
       setStatus('saved');
-      // Optionally navigate away or show persistent success message
+      setUpdateSuccess('Memoir updated successfully!');
       setTimeout(() => {
-        setStatus('editing'); // Revert to editing status after a bit
-      }, 2000);
+        setStatus('editing');
+        setUpdateSuccess(null);
+      }, 3000);
     } catch (err) {
       console.error('Failed to update memoir:', err);
       setApiError(err instanceof Error ? err.message : 'Failed to update memoir.');
-      setStatus('error');
+      setStatus('error'); // Stay in error state until user retries or navigates
     }
   };
 
   if (status === 'loading') {
-    return <div className="text-center p-10">Loading memoir...</div>;
+    return <div className="text-center p-10"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div><p className="text-xl text-blue-600 dark:text-blue-400 mt-4">Loading memoir...</p></div>;
   }
 
-  if (status === 'error') {
+  if (status === 'error' && apiError) { // Ensure apiError is present before showing error state
     return (
-        <div className="text-center p-10">
-            <p className="text-red-500">Error: {apiError || 'An unknown error occurred.'}</p>
-            <button onClick={() => navigate('/')} className="mt-4 bg-blue-500 text-white py-2 px-4 rounded">Go Home</button>
+        <div className="text-center p-10 bg-red-50 dark:bg-red-900 rounded-lg shadow-md">
+            <p className="text-xl text-red-600 dark:text-red-300">{apiError}</p>
+            <button
+                type="button"
+                onClick={() => navigate('/')}
+                className="mt-6 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            >
+                Go Home
+            </button>
         </div>
     );
   }
 
+
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Edit Memoir</h1>
+      <form onSubmit={handleUpdateMemoir} className="p-6 bg-white dark:bg-gray-800 shadow-xl rounded-lg">
+        <h1 className="text-3xl font-bold mb-8 text-center text-gray-800 dark:text-gray-200">Edit Memoir</h1>
 
-      <div className="p-6 bg-white shadow-lg rounded-lg">
-        <div className="mb-6">
-            <label htmlFor="memoirTitleEdit" className="block text-sm font-medium text-gray-700 mb-1">
-                Memoir Title
-            </label>
-            <input
-                type="text"
-                id="memoirTitleEdit"
-                name="memoirTitleEdit"
-                value={memoirTitle}
-                onChange={(e) => setMemoirTitle(e.target.value)}
-                placeholder="Enter memoir title"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                disabled={status !== 'editing' && status !== 'loaded'}
-            />
+        <div className="space-y-6">
+            <div>
+                <label htmlFor="memoirTitleEdit" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Memoir Title
+                </label>
+                <input
+                    type="text"
+                    id="memoirTitleEdit"
+                    name="memoirTitleEdit"
+                    value={memoirTitle}
+                    onChange={(e) => setMemoirTitle(e.target.value)}
+                    placeholder="Enter memoir title"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                    disabled={status === 'saving' || status === 'loading'}
+                />
+            </div>
+
+            <div>
+                <h2 className="text-xl font-semibold mb-2 text-gray-700 dark:text-gray-300">Edit Content</h2>
+                {(status === 'loaded' || status === 'editing' || status === 'saving' || status === 'saved') ? (
+                <RichTextEditor
+                    initialContent={editorInitialContent}
+                    onContentChange={()=>{}} // Not strictly needed if saving from ref
+                    editorRef={editorRef}
+                />
+                ) : (
+                <p className="dark:text-gray-300">Editor is loading content...</p>
+                )}
+            </div>
+
+            <div className="flex items-center">
+                <input
+                    id="is_public"
+                    name="is_public"
+                    type="checkbox"
+                    checked={isPublic}
+                    onChange={(e) => setIsPublic(e.target.checked)}
+                    className="h-4 w-4 text-indigo-600 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500"
+                    disabled={status === 'saving' || status === 'loading'}
+                />
+                <label htmlFor="is_public" className="ml-2 block text-sm text-gray-900 dark:text-gray-300">
+                    Make this memoir public?
+                </label>
+            </div>
+
+            {/* Displaying chapters (read-only for now, could be editable in future) */}
+            {chapters && chapters.length > 0 && (
+                <div>
+                    <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">Chapters:</h3>
+                    <ul className="list-disc list-inside pl-5 mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                        {chapters.map((chap, idx) => <li key={chap.id || idx}>{chap.title}{chap.summary ? ` - ${chap.summary.substring(0,50)}...` : ''}</li>)}
+                    </ul>
+                </div>
+            )}
         </div>
 
-        <h2 className="text-2xl font-semibold mb-4">Edit Content</h2>
-        {(status === 'loaded' || status === 'editing' || status === 'saving' || status === 'saved') && editorInitialContent ? (
-          <RichTextEditor
-            initialContent={editorInitialContent}
-            onContentChange={handleEditorContentChange} // We might not use the updated content from here directly if saving from ref
-            editorRef={editorRef}
-          />
-        ) : (
-          <p>Editor is loading content...</p> // Fallback if editorInitialContent is not yet ready
-        )}
-
-        {status === 'saved' && <p className="text-green-600 mt-4 text-center">Memoir updated successfully!</p>}
-        {apiError && status !== 'error' && <p className="text-red-500 mt-4 text-center">{apiError}</p>}
+        {updateSuccess && status === 'saved' && <p className="text-green-600 dark:text-green-400 mt-4 text-center p-2 bg-green-50 dark:bg-green-900 rounded-md">{updateSuccess}</p>}
+        {apiError && status === 'error' && <p className="text-red-600 dark:text-red-400 mt-4 text-center p-2 bg-red-50 dark:bg-red-900 rounded-md">{apiError}</p>}
 
 
-        <div className="mt-6 text-right">
-          <button
-            onClick={handleUpdateMemoir}
-            disabled={status === 'saving' || status === 'loading'}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:bg-gray-400"
-          >
-            {status === 'saving' ? 'Saving...' : 'Update Memoir'}
-          </button>
+        <div className="mt-8 pt-5 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex justify-end">
+            <button
+                type="submit"
+                disabled={status === 'saving' || status === 'loading'}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:bg-gray-400 dark:disabled:bg-gray-600"
+            >
+                {status === 'saving' ? 'Saving...' : 'Update Memoir'}
+            </button>
+          </div>
         </div>
-      </div>
+      </form>
     </div>
   );
 };
