@@ -1,0 +1,62 @@
+/* Basic TipTap Editor Styling */
+
+/* The editor itself - an editable div */
+.ProseMirror {
+  min-height: 200px; /* Ensure it has some height */
+  padding: 0.75rem; /* 12px */
+  border: 1px solid #D1D5DB; /* gray-300 */
+  border-top: none; /* Toolbar has top border */
+  border-radius: 0 0 0.5rem 0.5rem; /* rounded-b-lg */
+  outline: none; /* Remove default focus outline */
+}
+
+.ProseMirror:focus {
+  border-color: #6366F1; /* indigo-500, or your preferred focus color */
+  box-shadow: 0 0 0 1px #6366F1; /* Optional: focus ring */
+}
+
+/* Placeholder styling (if you use the Placeholder extension) */
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #adb5bd;
+  pointer-events: none;
+  height: 0;
+}
+
+/* Basic styling for elements within the editor (Tailwind's @tailwindcss/typography 'prose' class handles a lot of this) */
+/* You might not need much here if you use the prose class on the editor's attributes */
+.ProseMirror h1,
+.ProseMirror h2,
+.ProseMirror h3 {
+  font-weight: bold;
+}
+
+.ProseMirror ul,
+.ProseMirror ol {
+  margin-left: 1.5rem; /* Adjust as needed */
+  padding-left: 1rem; /* Indent lists */
+}
+
+.ProseMirror li > p {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+
+.ProseMirror blockquote {
+  border-left: 3px solid #ccc;
+  margin-left: 1.5rem;
+  padding-left: 1rem;
+  font-style: italic;
+  color: #555;
+}
+
+.ProseMirror hr {
+  border-top: 1px solid #ccc;
+  margin: 1rem 0;
+}
+
+/* Ensure buttons in menubar don't have default browser styling if they are actual <button> elements */
+/* This is generally handled by Tailwind's preflight, but can be explicit if needed */
+/* MenuBar button styling is primarily done via Tailwind classes in the component itself */
