@@ -1,215 +1,94 @@
-# 产品需求文档 (PRD): 夕阳回忆 Web App
+# Sunset Memories Web Application
 
-**版本:** 1.0
-**日期:** 2023-10-27
-**负责人:** (your name/code)
-**状态:** 初稿
+This is the monorepo for the "夕阳回忆" (Sunset Memories) web application, a platform designed to help seniors record, share, and preserve their life stories.
 
-## 1. 引言
+## Overview
 
-### 1.1 产品概述
+The project consists of two main packages:
 
-"夕阳回忆"是一款专为老年群体设计的 Web 应用程序，旨在帮助他们轻松记录、整理、分享和传承自己的人生故事。用户可以通过语音快速生成回忆录框架，自行或邀请亲友协作编辑，也可申请平台提供的专业线下协助服务。回忆录支持多种媒体内容，并可一键申请出版。此外，用户还可以从社区中其他老人分享的生活记录中获取灵感和素材。
+-   `client/`: A React frontend built with TypeScript, Vite, and Tailwind CSS.
+-   `server/`: A Node.js backend powered by the NestJS framework, using PostgreSQL and Redis.
 
-### 1.2 产品目标
+Refer to the `docs/PRD.md` for detailed product requirements and features.
 
-* 降低创作门槛
-* 促进情感连系
-* 提供专业支持
-* 实现记忆传承
-* 构建温暖社区
+## Prerequisites
 
-### 1.3 目标用户
+-   Node.js (e.g., v18 or v20, consider adding a `.nvmrc` file)
+-   pnpm (latest version)
+-   Docker (for running PostgreSQL and Redis, or local installations)
 
-* 核心用户：60岁以上，有记录和分享人生故事意愿的老年人
-* 次要用户：亲友，回忆录助理，平台管理员
+## Setup
 
-## 2. 产品功能详述
+1.  **Clone the repository:**
+    ```bash
+    git clone <repository-url>
+    cd sunset-memories
+    ```
 
-### 2.1 用户模块
+2.  **Install dependencies:**
+    This command will install dependencies for the root, client, and server packages defined in `pnpm-workspace.yaml`.
+    ```bash
+    pnpm install
+    ```
 
-#### 2.1.1 注册与登录
+3.  **Environment Variables:**
+    Each package (`client` and `server`) will have its own `.env.example` file. Copy these to `.env` and fill in the required values:
+    ```bash
+    cp client/.env.example client/.env
+    cp server/.env.example server/.env
+    ```
+    *(Note: These `.env.example` files will be created as part of their respective package setups.)*
 
-* 手机号+验证码
-* 微信登录（远期）
-* 忘记密码找回
+4.  **Setup Database & Services (if not using a project-level Docker Compose):**
+    Ensure PostgreSQL and Redis instances are running and accessible according to the server's `.env` configuration.
 
-#### 2.1.2 个人中心
+## Development
 
-* 修改昵称、头像
-* 查看回忆录列表，订单
+To run both client and server in development mode with hot reloading:
 
-### 2.2 回忆录创作模块
+```bash
+pnpm dev
+```
 
-#### 2.2.1 语音录入与转文字
+Individual commands:
 
-* Web Audio API 录音
-* 音频上传 → 豆瓣 STT API → 文本
+-   Start client development server: `pnpm --filter client dev` (or `pnpm dev:client` from root)
+-   Start server development server: `pnpm --filter server dev` (or `pnpm dev:server` from root)
 
-#### 2.2.2 智能框架生成
+## Build
 
-* 使用 LLM (通义千问) 根据转写文本生成章节框架
+To build both client and server for production:
 
-#### 2.2.3 多媒体编辑器
+```bash
+pnpm build
+```
 
-* 集成 TipTap / Quill.js 如的富文本编辑器
-* 支持文字、图片、视频等内容
+Individual commands:
 
-#### 2.2.4 章节管理
+-   Build client: `pnpm --filter client build` (or `pnpm build:client` from root)
+-   Build server: `pnpm --filter server build` (or `pnpm build:server` from root)
 
-* 新增/删除/排序章节
-* 原始本数据保存章节内容
+## Linting and Formatting
 
-### 2.3 协作模块
+-   Lint all packages: `pnpm lint` (will require configuration in ESLint to span workspaces or run per-package)
+-   Format all packages: `pnpm format` (will require configuration in Prettier to span workspaces or run per-package)
 
-#### 2.3.1 邀请协作
+## Running Tests
 
-* 作者可选择章节邀请亲友
-* 被邀请者接受/拒绝
+(Test scripts will be defined within each package)
 
-#### 2.3.2 权限管理
+-   Run client tests: `pnpm --filter client test`
+-   Run server tests: `pnpm --filter server test`
+-   Run all tests: `pnpm test` (if configured at the root to delegate to workspaces)
 
-* 权限分类：阅读 / 评论 / 编辑
-* 可指定章节或整本回忆录
 
-### 2.4 专业协助服务模块
+## Monorepo Structure
 
-#### 2.4.1 服务申请
+-   `pnpm-workspace.yaml`: Defines the workspace packages (`client`, `server`).
+-   `client/`: Contains the frontend React application.
+-   `server/`: Contains the backend NestJS application.
+-   `docs/`: Contains project documentation, including the Product Requirements Document (`PRD.md`).
 
-* 用户填写需求表（联系方式，地址，需求描述等）
+## Contributing
 
-#### 2.4.2 平台派单与确认
-
-* 管理员根据区域和服务人员状态派单
-* 服务人员答处：接受/拒绝
-
-很棒的产品需求文档初稿！你已经覆盖了非常完整的核心模块和用户流程。如果你想继续完善，可以从以下几个角度补足余下的部分，使整份 PRD 更完整、清晰，便于团队对齐和后续开发：
-
-#### 2.4.3 服务过程记录与评价
-
-  * **描述:** 服务人员在完成服务后填写服务记录，用户可对服务进行评价。
-  * **用户故事:**
-
-    * 作为服务人员，我可以在完成任务后上传整理内容简报，并备注服务情况。
-    * 作为用户，我可以为这次服务打分并写下评价。
-  * **业务逻辑:**
-
-    * 服务人员可上传文字/图片记录服务过程。
-    * 用户完成服务后可评价，系统记录评分。
-  * **API端点 (参考):**
-
-    * `POST /provider/service-requests/{requestId}/report`
-    * `POST /users/service-requests/{requestId}/review` (评分、评价内容)
-  * **数据库关联:** `offline_service_requests`, `service_reviews`, `media_assets`
-
----
-
-## 2.5 出版模块 (Memoir Publishing)
-
-#### 2.5.1 出版申请
-
-  * **描述:** 用户可提交出版申请，将回忆录以电子书或纸质书形式出版。
-  * **用户故事:**
-
-    * 作为用户，我希望把我的回忆录做成一本真正的书送给我的家人。
-  * **业务逻辑:**
-
-    * 提供出版类型选择（电子书 / 纸质书）、排版风格选择。
-    * 用户提交申请后，管理员后台进行审核与确认报价。
-  * **API端点 (参考):**
-
-    * `POST /publish-orders` (memoir\_id, format, options)
-    * `GET /users/me/publish-orders`
-  * **数据库关联:** `publish_orders`
-
-#### 2.5.2 排版与交付
-
-  * **描述:** 平台进行回忆录内容排版并制作出版文件。
-  * **业务逻辑:**
-
-    * 后台使用模版工具或人工编辑完成排版。
-    * 用户确认最终排版样式后进行印刷或生成电子书下载。
-  * **API端点 (可选):**
-
-    * `PUT /publish-orders/{orderId}/confirm-layout`
-    * `GET /publish-orders/{orderId}/download`（电子书）
-
----
-
-## 2.6 社区模块 (Community)
-
-#### 2.6.1 精选回忆录浏览
-
-  * **描述:** 用户可查看其他公开回忆录，获得灵感或共鸣。
-  * **用户故事:**
-
-    * 作为用户，我想看看其他人都记录了些什么，也许能想起自己的经历。
-  * **业务逻辑:**
-
-    * 显示已设置为“公开”的回忆录。
-    * 按标签、地区、发布时间等筛选。
-  * **API端点 (参考):**
-
-    * `GET /community/memoirs?filter=...`
-    * `GET /memoirs/{memoirId}`（访客视角）
-  * **数据库关联:** `memoirs`（公开状态字段）、`users`
-
-#### 2.6.2 点赞与评论
-
-  * **描述:** 用户可点赞、评论其他公开回忆录章节。
-  * **用户故事:**
-
-    * 作为社区成员，我想为我喜欢的故事点赞和留言。
-  * **API端点 (参考):**
-
-    * `POST /memoirs/{memoirId}/like`
-    * `POST /memoirs/{memoirId}/comment`
-    * `GET /memoirs/{memoirId}/comments`
-  * **数据库关联:** `likes`, `comments`
-
----
-
-## 3. 非功能性需求
-
-#### 3.1 易用性
-
-  * 大字体、强对比度设计，适配老年人视觉。
-  * 语音辅助操作提示。
-  * 可在平板、手机、电脑上良好显示。
-
-#### 3.2 安全性
-
-  * 用户隐私保护：默认回忆录为私密，需主动设置为公开。
-  * 数据加密：密码加密存储，用户数据传输需HTTPS。
-  * 数据备份机制防止数据丢失。
-
-#### 3.3 可扩展性
-
-  * 模块化架构设计，便于后续功能扩展（如AI续写、自动排版）。
-  * API 设计遵循 REST 标准，后续可提供移动端 App 接入。
-
----
-
-## 4. 技术选型建议（可选）
-
-* **前端：** React + TypeScript + Tailwind CSS
-* **后端：** Node.js / NestJS 或 Python / Django
-* **数据库：** PostgreSQL + Redis
-* **存储：** 阿里云 OSS / 七牛云
-* **语音转文字：** 阿里云智能语音服务
-* **LLM生成框架：** 通义千问 API（或其他支持中文的 LLM）
-
----
-
-## 5. 项目里程碑（MVP版本）
-
-| tasks  | 目标                   |
-| ----- | -------------------- |
-| task1 | 完成需求分析、原型图设计         |   | 完成原型图及核心流程确认         |
-| task2 | 完成核心功能开发         | | 实现用户注册/登录、语音上传、语音转文字 |
-| task3 | 完成核心功能测试         | | 完成核心功能测试 | | 实现智能章节生成、基本内容编辑器     |
-| task4 | 完成核心功能测试         | | 完成核心功能测试 |   | 实现协作者邀请、服务申请流程       |
-| task5 | 完成核心功能测试         | | 完成个人中心与社区浏览模块        |
-| task6 | 内部测试与上线准备            |
-
-
+Please refer to `CONTRIBUTING.md` (to be created) for contribution guidelines.
