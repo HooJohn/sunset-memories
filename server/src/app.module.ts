@@ -2,27 +2,33 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
-// Import feature modules here later (e.g., UsersModule, MemoirsModule)
-// import { UsersModule } from './users/users.module';
-// import { MemoirsModule } from './memoirs/memoirs.module';
-// import { AuthModule } from './auth/auth.module';
-// import { CommunityModule } from './community/community.module';
-// import { PublishingModule } from './publishing/publishing.module';
-// import { AssistanceModule } from './assistance/assistance.module';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
+import { MemoirsModule } from './memoirs/memoirs.module'; // Added import for MemoirsModule
+
+import { User } from './users/entities/user.entity';
+import { Memoir } from './memoirs/entities/memoir.entity'; // Added import for Memoir
+import { Chapter } from './memoirs/entities/chapter.entity'; // Added import for Chapter
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true, // Makes ConfigModule available globally
-      envFilePath: '.env', // Specify your .env file path
+      isGlobal: true,
+      envFilePath: '.env',
+      ignoreEnvFile: process.env.NODE_ENV === 'production',
     }),
-    // UsersModule,
-    // MemoirsModule,
-    // AuthModule,
-    // CommunityModule,
-    // PublishingModule,
-    // AssistanceModule,
+    TypeOrmModule.forRoot({
+      type: 'sqlite',
+      database: 'db.sqlite',
+      entities: [User, Memoir, Chapter],
+      synchronize: true, // Dev only!
+      // logging: true,
+    }),
+    UsersModule,
+    AuthModule,
+    MemoirsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
