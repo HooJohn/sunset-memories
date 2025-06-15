@@ -31,7 +31,7 @@ async function bootstrap() {
   });
 
   // Global prefix (e.g., /api/v1) - Uncomment if you want all routes prefixed
-  // app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix('api'); // Set global prefix for all routes
 
   await app.listen(port);
   console.log(`Application is running on: ${await app.getUrl()}`);
