@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+*/node_modules/
+dist/
+*/dist/
+.pnp/
+.pnp.js
+.yarn/
+
+# Build artifacts
+build/
+coverage/
+*.log
+*.pid
+*.seed
+*.lock
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE and OS files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*~
+.DS_Store
+Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
+
+# NestJS
+.nest/
+
+# Vite
+.vite/
+client/dist/
+client/coverage/
+
+# Next.js (if ever used)
+.next/
+out/
+
+# PNPM debug log
+pnpm-debug.log
