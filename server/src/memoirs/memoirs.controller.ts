@@ -37,8 +37,11 @@ import { InviteCollaboratorDto } from './dto/invite-collaborator.dto';
 import { MemoirCollaboration } from './entities/memoir-collaboration.entity';
 import { Memoir } from './entities/memoir.entity';
 import { Chapter } from './entities/chapter.entity';
-import { PublicMemoirSummaryDto } from './dto/public-memoir-summary.dto'; // Added
-import { PublicMemoirDetailDto } from './dto/public-memoir-detail.dto'; // Added
+import { PublicMemoirSummaryDto } from './dto/public-memoir-summary.dto';
+import { PublicMemoirDetailDto } from './dto/public-memoir-detail.dto';
+import { CreateCommentDto } from './dto/create-comment.dto'; // Import CreateCommentDto
+import { CommentResponseDto } from './dto/comment-response.dto'; // Import CommentResponseDto
+import { Comment } from './entities/comment.entity'; // Import Comment entity for type hinting
 import { Express } from 'express';
 
 interface AuthenticatedRequest extends Request {
@@ -231,5 +234,54 @@ export class MemoirsController {
     @Req() req: AuthenticatedRequest,
   ): Promise<MemoirCollaboration[]> {
     return this.memoirsService.getCollaboratorsForMemoir(memoirId, req.user.userId);
+  }
+
+  // == Comment Routes ==
+  @Post(':memoirId/comments')
+  @UseGuards(JwtAuthGuard) // User must be logged in to comment
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async addComment(
+    @Param('memoirId', ParseUUIDPipe) memoirId: string,
+    @Body() createCommentDto: CreateCommentDto,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<CommentResponseDto> {
+    this.logger.log(`User ${req.user.userId} adding comment to memoir ${memoirId}`);
+    const comment = await this.memoirsService.addComment(memoirId, createCommentDto, req.user.userId);
+    return new CommentResponseDto(comment); // Transform entity to DTO
+  }
+
+  @Get(':memoirId/comments')
+  // No JwtAuthGuard here if comments on public memoirs can be viewed by anyone.
+  // If only for authenticated users or collaborators, add @UseGuards(JwtAuthGuard).
+  // For now, assuming public visibility of comments on (potentially public) memoirs.
+  async getCommentsByMemoirId(
+    @Param('memoirId', ParseUUIDPipe) memoirId: string,
+  ): Promise<CommentResponseDto[]> {
+    this.logger.log(`Fetching comments for memoir ${memoirId}`);
+    const comments = await this.memoirsService.getCommentsByMemoirId(memoirId);
+    return comments.map(comment => new CommentResponseDto(comment)); // Transform entities to DTOs
+  }
+
+  // == Like Routes ==
+  @Post(':memoirId/like')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK) // Or HttpStatus.CREATED if a "like" resource is made, OK for toggle
+  async likeMemoir(
+    @Param('memoirId', ParseUUIDPipe) memoirId: string,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<{ likeCount: number; isLikedByCurrentUser: boolean }> {
+    this.logger.log(`User ${req.user.userId} liking memoir ${memoirId}`);
+    return this.memoirsService.likeMemoir(memoirId, req.user.userId);
+  }
+
+  @Delete(':memoirId/like')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK) // OK implies the action was successful (even if it meant "no change")
+  async unlikeMemoir(
+    @Param('memoirId', ParseUUIDPipe) memoirId: string,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<{ likeCount: number; isLikedByCurrentUser: boolean }> {
+    this.logger.log(`User ${req.user.userId} unliking memoir ${memoirId}`);
+    return this.memoirsService.unlikeMemoir(memoirId, req.user.userId);
   }
 }

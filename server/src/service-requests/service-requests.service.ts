@@ -26,9 +26,14 @@ export class ServiceRequestsService {
     }
 
     const newServiceRequest = this.serviceRequestRepository.create({
-      ...createDto,
       userId,
-      status: ServiceRequestStatus.PENDING_REVIEW, // Initial status
+      memoirId: createDto.memoirId,
+      serviceType: createDto.serviceType,
+      details: createDto.details, // Frontend's 'description' is mapped to 'details' in DTO
+      contactPhone: createDto.contactPhone,
+      address: createDto.address,
+      preferredDate: createDto.preferredDate ? new Date(createDto.preferredDate) : null,
+      status: ServiceRequestStatus.PENDING, // Default status (ensure PENDING_REVIEW is PENDING in enum)
     });
 
     return this.serviceRequestRepository.save(newServiceRequest);
