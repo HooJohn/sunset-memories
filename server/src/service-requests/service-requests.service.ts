@@ -33,7 +33,7 @@ export class ServiceRequestsService {
       contactPhone: createDto.contactPhone,
       address: createDto.address,
       preferredDate: createDto.preferredDate ? new Date(createDto.preferredDate) : null,
-      status: ServiceRequestStatus.PENDING, // Default status (ensure PENDING_REVIEW is PENDING in enum)
+      status: ServiceRequestStatus.PENDING_REVIEW,
     });
 
     return this.serviceRequestRepository.save(newServiceRequest);

@@ -5,6 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
   Unique,
+  Column, // Added Column import
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Memoir } from './memoir.entity';

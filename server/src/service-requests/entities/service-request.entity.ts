@@ -55,7 +55,7 @@ export class ServiceRequest {
   @Column({
     type: 'enum',
     enum: ServiceRequestStatus,
-    default: ServiceRequestStatus.PENDING, // Assuming PENDING is the default from your enum
+    default: ServiceRequestStatus.PENDING_REVIEW,
   })
   status: ServiceRequestStatus;
 

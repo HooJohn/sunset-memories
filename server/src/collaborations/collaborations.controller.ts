@@ -10,13 +10,20 @@ import {
   UsePipes,
   ParseUUIDPipe,
   Logger,
-  ForbiddenException, // For checking user ID against collaboration record
+  // ForbiddenException, // Not directly used in this controller, service handles it
+  // NotFoundException, // Not directly used in this controller, service handles it
+  Delete, // Added
+  HttpCode, // Added
+  HttpStatus, // Added
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { MemoirsService } from '../memoirs/memoirs.service'; // Assuming logic remains in MemoirsService for now
+import { MemoirsService } from '../memoirs/memoirs.service';
 import { MemoirCollaboration } from '../memoirs/entities/memoir-collaboration.entity';
 import { RespondToInvitationDto } from '../memoirs/dto/respond-to-invitation.dto';
-import { CollaborationStatus } from '../memoirs/enums/collaboration-status.enum';
+// import { CollaborationStatus } from '../memoirs/enums/collaboration-status.enum'; // Not directly used, DTO uses it
+import { UpdateCollaborationRoleDto } from '../memoirs/dto/update-collaboration-role.dto.ts'; // Added import
+// import { CollaborationRole } from '../memoirs/enums/collaboration-role.enum'; // Not directly used, DTO uses it
+
 
 interface AuthenticatedRequest extends Request {
   user: {
