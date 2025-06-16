@@ -62,4 +62,25 @@ export class CollaborationsController {
   // PATCH /collaborations/:collaborationId/role (by owner)
   // DELETE /collaborations/:collaborationId (by owner)
   // This would require fetching the collaboration, then its memoir, then checking memoir.userId against ownerId.
+
+  @Patch(':collaborationId/role')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  async updateCollaboratorRole(
+    @Param('collaborationId', ParseUUIDPipe) collaborationId: string,
+    @Body() updateDto: UpdateCollaborationRoleDto, // DTO created in this subtask
+    @Req() req: AuthenticatedRequest,
+  ): Promise<MemoirCollaboration> {
+    this.logger.log(`User ${req.user.userId} attempting to update role for collaboration ${collaborationId} to ${updateDto.role}`);
+    return this.memoirsService.updateCollaboratorRole(collaborationId, updateDto.role, req.user.userId);
+  }
+
+  @Delete(':collaborationId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeCollaborator(
+    @Param('collaborationId', ParseUUIDPipe) collaborationId: string,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<void> {
+    this.logger.log(`User ${req.user.userId} attempting to remove collaboration ${collaborationId}`);
+    await this.memoirsService.removeCollaborator(collaborationId, req.user.userId);
+  }
 }

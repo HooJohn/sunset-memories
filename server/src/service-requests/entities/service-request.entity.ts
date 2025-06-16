@@ -20,14 +20,14 @@ export class ServiceRequest {
   @Column({ type: 'int' })
   userId: number;
 
-  @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true }) // If user is deleted, keep request but nullify userId or use onDelete: 'CASCADE' if request should be deleted
+  @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'userId' })
   user: User;
 
   @Column({ type: 'uuid', nullable: true })
   memoirId?: string;
 
-  @ManyToOne(() => Memoir, { onDelete: 'SET NULL', nullable: true }) // If memoir is deleted, keep request but nullify memoirId
+  @ManyToOne(() => Memoir, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'memoirId' })
   memoir?: Memoir;
 
@@ -40,17 +40,24 @@ export class ServiceRequest {
   @Column({ type: 'text' })
   details: string;
 
-  @Column({ type: 'varchar', length: 50, nullable: true })
-  contactPreference: string; // e.g., 'phone', 'email'
+  // @Column({ type: 'varchar', length: 50, nullable: true }) // Removed contactPreference
+  // contactPreference: string;
+
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  contactPhone: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  address: string;
+
+  @Column({ type: 'date', nullable: true }) // Storing as date
+  preferredDate: Date;
 
   @Column({
     type: 'enum',
     enum: ServiceRequestStatus,
-    default: ServiceRequestStatus.PENDING_REVIEW,
+    default: ServiceRequestStatus.PENDING, // Assuming PENDING is the default from your enum
   })
   status: ServiceRequestStatus;
-
-  // Could add assignedTo (userId of assistant), notes, etc. in future
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;

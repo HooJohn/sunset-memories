@@ -28,7 +28,7 @@ export class UsersService {
     return this.userRepository.findOne({ where: { id } });
   }
 
-  async create(createUserDto: Partial<User>): Promise<User> { // Using Partial<User> for flexibility
+  async create(createUserDto: CreateUserDto): Promise<User> { // Changed to use CreateUserDto
     const newUser = this.userRepository.create(createUserDto);
     return this.userRepository.save(newUser);
   }

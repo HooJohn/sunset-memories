@@ -1,4 +1,4 @@
-import { IsArray, IsString, IsOptional, ValidateNested } from 'class-validator';
+import { IsArray, IsString, IsOptional, ValidateNested, IsNotEmpty } from 'class-validator';
 import { Type } from 'class-transformer'; // Required for @ValidateNested
 
 class ChapterDto {
