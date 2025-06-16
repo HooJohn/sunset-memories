@@ -15,7 +15,6 @@
     "format": "prettier --write .",
     "install:client": "pnpm --filter client install",
     "install:server": "pnpm --filter server install",
-    "postinstall": "pnpm install:client && pnpm install:server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
