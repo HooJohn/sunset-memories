@@ -1,8 +1,8 @@
-// Placeholder for ServiceRequestPage.tsx
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } // Import useParams if memoirId might come from route
+    from 'react-router-dom';
 import ServiceRequestForm from '../../components/services/ServiceRequestForm';
-import { submitServiceRequest, ServiceRequestData, ServiceRequest } from '../../services/api'; // To be created/updated in api.ts
+import { submitServiceRequest, CreateServiceRequestPayload } from '../../services/api';
 
 const ServiceRequestPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -10,21 +10,28 @@ const ServiceRequestPage: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const handleSubmitRequest = async (formData: ServiceRequestData): Promise<void> => {
+  // Example: if memoirId could come from route like /memoirs/:memoirId/request-service
+  // const { memoirIdFromRoute } = useParams<{ memoirIdFromRoute?: string }>();
+  // For now, assuming general service request, memoirId is optional in the form.
+
+  const handleSubmitRequest = async (formData: CreateServiceRequestPayload): Promise<void> => {
     setIsSubmitting(true);
     setError(null);
     setSuccessMessage(null);
     try {
-      const newRequest = await submitServiceRequest(formData);
+      // If memoirId came from route and should override form, set it here:
+      // const payload = { ...formData, memoirId: memoirIdFromRoute || formData.memoirId };
+      const newRequest = await submitServiceRequest(formData); // formData now matches CreateServiceRequestPayload
       setSuccessMessage(`Service request submitted successfully! Request ID: ${newRequest.id}. You will be redirected shortly.`);
-      // Redirect to user's request list or a confirmation page after a delay
       setTimeout(() => {
-        navigate('/my-requests'); // Or a specific page for the new request
+        navigate('/my-requests');
       }, 3000);
     } catch (err) {
       console.error('Failed to submit service request:', err);
-      setError(err instanceof Error ? err.message : 'An unknown error occurred.');
-      throw err; // Re-throw to allow form to handle its own error state if needed
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
+      setError(errorMessage);
+      // Re-throw so the form can catch it and potentially display field-specific errors or clear itself
+      throw new Error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -32,19 +39,22 @@ const ServiceRequestPage: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-8 text-center text-gray-800">Submit a Service Request</h1>
+      <h1 className="text-3xl font-bold mb-8 text-center text-gray-800 dark:text-gray-200">Submit a Service Request</h1>
 
-      <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-lg">
-        {error && !isSubmitting && ( // Show general errors here if not handled by form
-          <p className="text-red-500 bg-red-100 p-3 rounded-md text-center mb-6">{error}</p>
+      <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-lg shadow-xl">
+        {/* General error display, though form also has its own error display */}
+        {error && !isSubmitting && !successMessage && (
+          <p className="text-red-500 dark:text-red-400 bg-red-100 dark:bg-red-900 p-3 rounded-md text-center mb-6">{error}</p>
         )}
         {successMessage && (
-          <p className="text-green-500 bg-green-100 p-3 rounded-md text-center mb-6">{successMessage}</p>
+          <p className="text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900 p-3 rounded-md text-center mb-6">{successMessage}</p>
         )}
+
         {!successMessage && ( // Hide form on success message
             <ServiceRequestForm
                 onSubmit={handleSubmitRequest}
                 isSubmitting={isSubmitting}
+                // Pass memoirId here if it was from route: memoirId={memoirIdFromRoute}
             />
         )}
       </div>

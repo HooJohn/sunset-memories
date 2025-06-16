@@ -1,22 +1,35 @@
-// Placeholder for MemoirCollaboratorsPage.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import CollaboratorInviteForm from '../../components/memoirs/CollaboratorInviteForm';
 import CollaboratorList from '../../components/memoirs/CollaboratorList';
-import { getCollaborators, inviteCollaborator, Collaborator, CollaborationData, updateCollaboratorPermission, removeCollaborator } from '../../services/api'; // To be created in api.ts
+import {
+    getCollaborators,
+    inviteCollaborator,
+    updateCollaboratorRole,
+    removeCollaborator,
+    MemoirCollaboration, // Using the new interface
+    InviteCollaboratorPayload,
+    CollaborationRole
+} from '../../services/api';
 
 const MemoirCollaboratorsPage: React.FC = () => {
-  const { id: memoirId } = useParams<{ id: string }>();
-  const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
+  const { id: memoirId } = useParams<{ id: string }>(); // Renamed 'id' to 'memoirId' for clarity
+  const [collaborators, setCollaborators] = useState<MemoirCollaboration[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [memoirTitle, setMemoirTitle] = useState<string>(''); // Optional: Fetch memoir title
 
-  const fetchCollaborators = async () => {
+  const fetchMemoirCollaborators = useCallback(async () => {
     if (!memoirId) return;
     setIsLoading(true);
     setError(null);
     try {
-      const data = await getCollaborators(memoirId);
+      // Optional: Fetch memoir title for display - assuming getMemoirById exists and returns { title }
+      // const memoirData = await getMemoirById(memoirId);
+      // setMemoirTitle(memoirData.title);
+      // For now, we'll just use the ID in the title
+
+      const data = await getCollaborators(memoirId); // Uses actual API call
       setCollaborators(data);
     } catch (err) {
       console.error('Failed to fetch collaborators:', err);
@@ -24,82 +37,94 @@ const MemoirCollaboratorsPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchCollaborators();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [memoirId]);
 
-  const handleInviteCollaborator = async (inviteeEmail: string, permission: 'view' | 'comment' | 'edit') => {
+  useEffect(() => {
+    fetchMemoirCollaborators();
+  }, [fetchMemoirCollaborators]);
+
+  const handleInviteCollaborator = async (payload: Omit<InviteCollaboratorPayload, 'memoirId'>) => {
     if (!memoirId) {
       setError("Memoir ID is missing.");
-      return;
+      throw new Error("Memoir ID is missing."); // Ensure promise is rejected for form
     }
     setError(null);
     try {
-      const newCollaborator = await inviteCollaborator({ memoirId, inviteeEmail, permission });
-      setCollaborators(prev => [...prev, newCollaborator]); // Add to local list
-      // Optionally, show a success message
+      // Pass memoirId along with phone and role to the API function
+      const newCollaborator = await inviteCollaborator(memoirId, payload);
+      setCollaborators(prev => [...prev, newCollaborator]);
     } catch (err) {
       console.error('Failed to invite collaborator:', err);
-      setError(err instanceof Error ? err.message : 'Failed to invite collaborator.');
-      // Optionally, show error message to user in the form
-      throw err; // Re-throw to allow form to handle its own error state
+      const errorMessage = err instanceof Error ? err.message : 'Failed to invite collaborator.';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     }
   };
 
-  const handleUpdatePermission = async (collaborationId: string, newPermission: 'view' | 'comment' | 'edit') => {
+  const handleUpdateRole = async (collaborationId: string, newRole: CollaborationRole) => {
     setError(null);
     try {
-        const updatedCollaborator = await updateCollaboratorPermission(collaborationId, newPermission);
-        setCollaborators(prev => prev.map(c => c.id === collaborationId ? updatedCollaborator : c));
+        const updatedCollaborator = await updateCollaboratorRole(collaborationId, newRole);
+        setCollaborators(prev => prev.map(c => c.id === collaborationId ? { ...c, ...updatedCollaborator } : c));
     } catch (err) {
-        console.error('Failed to update permission:', err);
-        setError(err instanceof Error ? err.message : 'Failed to update permission.');
+        console.error('Failed to update role:', err);
+        const errorMessage = err instanceof Error ? err.message : 'Failed to update role.';
+        setError(errorMessage);
+        alert(`Error: ${errorMessage}`); // Simple alert for now
     }
   };
 
   const handleRemoveCollaborator = async (collaborationId: string) => {
     setError(null);
-    try {
-        await removeCollaborator(collaborationId);
-        setCollaborators(prev => prev.filter(c => c.id !== collaborationId));
-    } catch (err) {
-        console.error('Failed to remove collaborator:', err);
-        setError(err instanceof Error ? err.message : 'Failed to remove collaborator.');
+    if (window.confirm('Are you sure you want to remove this collaborator?')) {
+        try {
+            await removeCollaborator(collaborationId);
+            setCollaborators(prev => prev.filter(c => c.id !== collaborationId));
+        } catch (err) {
+            console.error('Failed to remove collaborator:', err);
+            const errorMessage = err instanceof Error ? err.message : 'Failed to remove collaborator.';
+            setError(errorMessage);
+            alert(`Error: ${errorMessage}`); // Simple alert
+        }
     }
   };
 
-
   if (!memoirId) {
-    return <div className="p-4 text-red-500 text-center">Memoir ID not found.</div>;
+    return <div className="p-4 text-red-500 dark:text-red-400 text-center">Memoir ID not found in URL.</div>;
   }
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Manage Collaborators for Memoir ID: {memoirId}</h1>
+      <h1 className="text-3xl font-bold mb-2 text-center text-gray-800 dark:text-gray-200">
+        Manage Collaborators
+      </h1>
+      <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-8">
+        For Memoir: {memoirTitle || memoirId}
+      </p>
 
-      {error && <p className="text-red-500 bg-red-100 p-3 rounded-md text-center mb-4">{error}</p>}
+      {error && <p className="text-red-500 dark:text-red-400 bg-red-100 dark:bg-red-900 p-3 rounded-md text-center mb-4">{error}</p>}
 
       <div className="grid md:grid-cols-2 gap-8">
-        <section className="p-6 bg-white shadow-lg rounded-lg">
-          <h2 className="text-2xl font-semibold mb-4 text-indigo-700">Invite New Collaborator</h2>
+        <section className="p-6 bg-white dark:bg-gray-800 shadow-xl rounded-lg">
+          <h2 className="text-2xl font-semibold mb-4 text-indigo-700 dark:text-indigo-400">Invite New Collaborator</h2>
           <CollaboratorInviteForm onSubmit={handleInviteCollaborator} />
         </section>
 
-        <section className="p-6 bg-white shadow-lg rounded-lg">
-          <h2 className="text-2xl font-semibold mb-4 text-indigo-700">Current Collaborators</h2>
+        <section className="p-6 bg-white dark:bg-gray-800 shadow-xl rounded-lg">
+          <h2 className="text-2xl font-semibold mb-4 text-indigo-700 dark:text-indigo-400">Current Collaborators</h2>
           {isLoading ? (
-            <p>Loading collaborators...</p>
+            <div className="text-center py-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="dark:text-gray-300 mt-2">Loading collaborators...</p>
+            </div>
           ) : collaborators.length > 0 ? (
             <CollaboratorList
               collaborators={collaborators}
-              onUpdatePermission={handleUpdatePermission}
+              onUpdateRole={handleUpdateRole} // Changed prop name for clarity
               onRemoveCollaborator={handleRemoveCollaborator}
             />
           ) : (
-            <p>No collaborators yet for this memoir.</p>
+            <p className="dark:text-gray-300">No collaborators yet for this memoir.</p>
           )}
         </section>
       </div>

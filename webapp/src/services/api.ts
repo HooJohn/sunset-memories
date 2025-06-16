@@ -5,7 +5,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    // 'Content-Type': 'application/json', // Default, but can be overridden for FormData
   },
 });
 
@@ -25,7 +25,9 @@ interface RegisterPayload {
 export interface User {
   id: string;
   phone: string;
-  nickname: string;
+  name?: string;
+  avatar_url?: string;
+  nickname?: string;
   created_at: string;
   updated_at: string;
 }
@@ -58,7 +60,7 @@ const getErrorMessage = (error: any): string => {
 // --- Auth API ---
 export const login = async (credentials: LoginPayload): Promise<AuthResponse> => {
   try {
-    const response = await apiClient.post<AuthResponse>('/auth/login', credentials);
+    const response = await apiClient.post<AuthResponse>('/auth/login', credentials, { headers: {'Content-Type': 'application/json'} });
     if (response.data.access_token) localStorage.setItem('authToken', response.data.access_token);
     return response.data;
   } catch (error) { throw new Error(getErrorMessage(error)); }
@@ -66,7 +68,7 @@ export const login = async (credentials: LoginPayload): Promise<AuthResponse> =>
 
 export const register = async (userData: RegisterPayload): Promise<AuthResponse> => {
   try {
-    const response = await apiClient.post<AuthResponse>('/auth/register', userData);
+    const response = await apiClient.post<AuthResponse>('/auth/register', userData, { headers: {'Content-Type': 'application/json'} });
     return response.data;
   } catch (error) { throw new Error(getErrorMessage(error)); }
 };
@@ -74,148 +76,214 @@ export const register = async (userData: RegisterPayload): Promise<AuthResponse>
 export const fetchUserProfile = async (): Promise<User> => {
   try {
     const token = localStorage.getItem('authToken');
-    if (!token) throw new Error('No authentication token found.');
-    const response = await apiClient.get<User>('/users/profile');
+    if (!token) throw new Error('Authentication token not found. Please login.');
+    const response = await apiClient.get<User>('/users/me');
     return response.data;
   } catch (error) { throw new Error(getErrorMessage(error)); }
 };
 
+export const updateUserProfile = async (data: { name?: string; avatar_url?: string; nickname?: string }): Promise<User> => {
+  try {
+    const token = localStorage.getItem('authToken');
+    if (!token) throw new Error('Authentication token not found. Please login.');
+    const payload: { name?: string; avatar_url?: string; nickname?: string } = {};
+    if (data.name !== undefined) payload.name = data.name;
+    if (data.avatar_url !== undefined) payload.avatar_url = data.avatar_url;
+    if (data.nickname !== undefined) payload.nickname = data.nickname;
+    const response = await apiClient.patch<User>('/users/me', payload, { headers: {'Content-Type': 'application/json'} });
+    return response.data;
+  } catch (error) { throw new Error(getErrorMessage(error)); }
+};
+
+
 // --- Memoir API ---
-export interface ChapterData { id?: string; title: string; summary?: string; }
-export interface MemoirData { title: string; content_html: string; transcribed_text?: string | null; chapters?: ChapterData[] | null; [key: string]: any; }
-// MemoirResponse now includes fields needed for public display like authorNickname and likeCount
-export interface MemoirResponse extends MemoirData {
+export interface Chapter {
+  id?: string;
+  title: string;
+  summary?: string;
+}
+export interface Memoir {
   id: string;
+  title: string;
+  content_html?: string | null;
+  is_public?: boolean;
+  user_id: string;
   created_at: string;
   updated_at: string;
-  user_id: string;
-  authorNickname?: string; // Added for displaying author name easily
-  likeCount?: number;      // Added for like functionality
-  isPublic?: boolean;      // Added to indicate if memoir is public
-  isLikedByCurrentUser?: boolean; // Added to know if the current user liked this memoir
+  transcribed_text?: string | null;
+  chapters?: Chapter[] | null;
+  authorNickname?: string;
+  likeCount?: number;
+  isLikedByCurrentUser?: boolean;
+}
+export interface CreateMemoirPayload {
+  title: string;
+  content_html?: string;
+  transcribed_text?: string;
+  chapters?: Chapter[];
+}
+export interface UpdateMemoirPayload {
+  title?: string;
+  content_html?: string;
+  is_public?: boolean;
+  transcribed_text?: string;
+  chapters?: Chapter[];
 }
 
-export const createMemoir = async (memoirData: MemoirData): Promise<MemoirResponse> => {
+export const transcribeAudio = async (file: File): Promise<{ transcription: string }> => {
   try {
-    const response = await apiClient.post<MemoirResponse>('/memoirs', memoirData);
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await apiClient.post<{ transcription: string }>('/memoirs/transcribe', formData);
+    return response.data;
+  } catch (error) { throw new Error(`Failed to transcribe audio: ${getErrorMessage(error)}`); }
+};
+export const generateChapters = async (transcribedText: string): Promise<{ chapters: Chapter[] }> => {
+  try {
+    const response = await apiClient.post<{ chapters: Chapter[] }>('/memoirs/generate-chapters', { transcribedText }, { headers: {'Content-Type': 'application/json'} });
+    return response.data;
+  } catch (error) { throw new Error(`Failed to generate chapters: ${getErrorMessage(error)}`); }
+};
+export const createMemoir = async (data: CreateMemoirPayload): Promise<Memoir> => {
+  try {
+    const response = await apiClient.post<Memoir>('/memoirs', data, { headers: {'Content-Type': 'application/json'} });
     return response.data;
   } catch (error) { throw new Error(`Failed to create memoir: ${getErrorMessage(error)}`); }
 };
-
-export const getMemoirById = async (id: string): Promise<MemoirResponse> => {
+export const getMemoirs = async (): Promise<Memoir[]> => {
+    try {
+        const response = await apiClient.get<Memoir[]>('/memoirs');
+        return response.data;
+    } catch (error) { throw new Error(`Failed to get memoirs: ${getErrorMessage(error)}`); }
+};
+export const getMemoirById = async (id: string): Promise<Memoir> => {
   try {
-    console.log(`API (mock): Fetching memoir by ID: ${id}`);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    // More detailed mock for specific IDs, including community fields
-    if (id === "123" || id === "mockMemoirId" || id === "sample-public-id") {
-        return {
-            id: id, title: `Mock Memoir ${id}`, content_html: `<p>This is mock content for memoir ${id}.</p><h2>Chapter 1: The Beginning</h2><p>It all started on a rainy day...</p><h2>Chapter 2: The Adventure</h2><p>Then, things got exciting.</p>`,
-            chapters: [{ title: "Chapter 1: The Beginning", summary: "It all started on a rainy day..." }, {title: "Chapter 2: The Adventure", summary: "Then, things got exciting."}],
-            transcribed_text: "Mock transcribed text for memoir " + id,
-            user_id: `user-${id.substring(0,3)}`,
-            authorNickname: `AuthorOf${id.substring(0,3)}`,
-            likeCount: Math.floor(Math.random() * 100),
-            isPublic: true,
-            isLikedByCurrentUser: Math.random() > 0.5,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-        } as MemoirResponse;
-    }
-     return {
-            id: id, title: `Generic Sample Memoir ${id}`, content_html: `<p>Content for memoir ${id}.</p>`,
-            chapters: [], user_id: "user-generic", authorNickname: "Generic Author", likeCount: 0, isPublic: false,
-            created_at: new Date().toISOString(), updated_at: new Date().toISOString()
-        } as MemoirResponse;
+    const response = await apiClient.get<Memoir>(`/memoirs/${id}`);
+    return response.data;
   } catch (error) { throw new Error(`Failed to fetch memoir: ${getErrorMessage(error)}`); }
 };
-
-export const updateMemoir = async (id: string, memoirData: MemoirData): Promise<MemoirResponse> => {
+export const updateMemoir = async (memoirId: string, data: UpdateMemoirPayload): Promise<Memoir> => {
   try {
-    const response = await apiClient.put<MemoirResponse>(`/memoirs/${id}`, memoirData);
+    const response = await apiClient.patch<Memoir>(`/memoirs/${memoirId}`, data, { headers: {'Content-Type': 'application/json'} });
     return response.data;
   } catch (error) { throw new Error(`Failed to update memoir: ${getErrorMessage(error)}`); }
 };
+export const deleteMemoir = async (memoirId: string): Promise<void> => {
+    try {
+        await apiClient.delete(`/memoirs/${memoirId}`);
+    } catch (error) { throw new Error(`Failed to delete memoir: ${getErrorMessage(error)}`); }
+};
 
 // --- Collaboration API ---
-export type PermissionLevel = 'view' | 'comment' | 'edit';
-export interface CollaborationData { inviteeEmail: string; permission: PermissionLevel; }
-export interface Collaborator { id: string; memoirId: string; userId: string; email: string; nickname: string; permission: PermissionLevel; }
+export enum CollaborationRole {
+  VIEWER = 'viewer',
+  EDITOR = 'editor',
+}
+export enum CollaborationStatus {
+  PENDING = 'pending',
+  ACCEPTED = 'accepted',
+  REJECTED = 'rejected',
+}
+export interface MemoirCollaboration {
+  id: string;
+  memoirId: string;
+  userId: string;
+  role: CollaborationRole;
+  status: CollaborationStatus;
+  user?: {
+    nickname?: string;
+    phone?: string;
+    name?: string;
+    avatar_url?: string;
+  };
+  memoir?: {
+    title?: string;
+  };
+}
+export interface InviteCollaboratorPayload {
+  collaboratorPhone: string;
+  role: CollaborationRole;
+}
+export interface RespondToInvitationPayload {
+  status: CollaborationStatus.ACCEPTED | CollaborationStatus.REJECTED;
+}
 
-export const getCollaborators = async (memoirId: string): Promise<Collaborator[]> => {
+export const getCollaborators = async (memoirId: string): Promise<MemoirCollaboration[]> => {
   try {
-    console.log(`API: Fetching collaborators for memoir ${memoirId}`);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const mockCollaborators: Collaborator[] = [
-      { id: 'collab1', memoirId: memoirId, userId: 'user2', email: 'collaborator1@example.com', nickname: 'CollabUserOne', permission: 'edit' },
-      { id: 'collab2', memoirId: memoirId, userId: 'user3', email: 'collaborator2@example.com', nickname: 'ViewerTwo', permission: 'view' },
-    ];
-    return memoirId === "123" ? mockCollaborators : [];
+    const response = await apiClient.get<MemoirCollaboration[]>(`/memoirs/${memoirId}/collaborators`);
+    return response.data;
   } catch (error) { throw new Error(`Failed to get collaborators: ${getErrorMessage(error)}`); }
 };
-
-export const inviteCollaborator = async (memoirId: string, data: CollaborationData): Promise<Collaborator> => {
+export const inviteCollaborator = async (memoirId: string, data: InviteCollaboratorPayload): Promise<MemoirCollaboration> => {
   try {
-    console.log(`API: Inviting ${data.inviteeEmail} to memoir ${memoirId} with ${data.permission} permission.`);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const newCollaborator: Collaborator = {
-      id: `collab${Math.random().toString(36).substring(2, 9)}`, memoirId: memoirId,
-      userId: `user${Math.random().toString(36).substring(2, 9)}`, email: data.inviteeEmail,
-      nickname: data.inviteeEmail.split('@')[0], permission: data.permission,
-    };
-    return newCollaborator;
+    const response = await apiClient.post<MemoirCollaboration>(`/memoirs/${memoirId}/collaborators`, data, { headers: {'Content-Type': 'application/json'} });
+    return response.data;
   } catch (error) { throw new Error(`Failed to invite collaborator: ${getErrorMessage(error)}`); }
 };
-
-export const updateCollaboratorPermission = async (collaborationId: string, permission: PermissionLevel): Promise<Collaborator> => {
-  try {
-    console.log(`API: Updating permission for collaboration ${collaborationId} to ${permission}.`);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return { id: collaborationId, memoirId: "mockMemoirId", userId: "mockUserId", email: "mockemail@example.com", nickname: "Mock User", permission: permission } as Collaborator;
-  } catch (error) { throw new Error(`Failed to update permission: ${getErrorMessage(error)}`); }
+export const getPendingInvitations = async (): Promise<MemoirCollaboration[]> => {
+    try {
+        const response = await apiClient.get<MemoirCollaboration[]>('/collaborations/invitations/pending');
+        return response.data;
+    } catch (error) { throw new Error(`Failed to fetch pending invitations: ${getErrorMessage(error)}`);}
 };
-
+export const respondToInvitation = async (collaborationId: string, data: RespondToInvitationPayload): Promise<MemoirCollaboration> => {
+    try {
+        const response = await apiClient.patch<MemoirCollaboration>(`/collaborations/invitations/${collaborationId}/respond`, data, { headers: {'Content-Type': 'application/json'} });
+        return response.data;
+    } catch (error) { throw new Error(`Failed to respond to invitation: ${getErrorMessage(error)}`);}
+};
+export const updateCollaboratorRole = async (collaborationId: string, role: CollaborationRole): Promise<MemoirCollaboration> => {
+  try {
+    // TODO: Backend endpoint for this needs to be implemented. Assuming PATCH /collaborations/:collaborationId/role
+    const response = await apiClient.patch<MemoirCollaboration>(`/collaborations/${collaborationId}/role`, { role }, { headers: {'Content-Type': 'application/json'} });
+    return response.data;
+  } catch (error) { throw new Error(`Failed to update collaborator role: ${getErrorMessage(error)}`); }
+};
 export const removeCollaborator = async (collaborationId: string): Promise<void> => {
   try {
-    console.log(`API: Removing collaboration ${collaborationId}.`);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return;
+    // TODO: Backend endpoint for this needs to be implemented. Assuming DELETE /collaborations/:collaborationId
+    await apiClient.delete(`/collaborations/${collaborationId}`);
   } catch (error) { throw new Error(`Failed to remove collaboration: ${getErrorMessage(error)}`); }
 };
 
-// --- Service Request API ---
-export type ServiceRequestStatus = 'pending' | 'accepted' | 'in-progress' | 'completed' | 'rejected';
-export interface ServiceRequestData { type: string; description: string; contactPhone: string; address: string; preferredDate?: string; }
-export interface ServiceRequest extends ServiceRequestData { id: string; userId: string; status: ServiceRequestStatus; createdAt: string; updatedAt?: string; }
 
-export const submitServiceRequest = async (data: ServiceRequestData): Promise<ServiceRequest> => {
+// --- Service Request API ---
+export enum ServiceType {
+    EDITING_ASSISTANCE = "EDITING_ASSISTANCE", INTERVIEW_HELP = "INTERVIEW_HELP",
+    TECHNICAL_SUPPORT = "TECHNICAL_SUPPORT", PHOTO_ORGANIZATION = "PHOTO_ORGANIZATION",
+    PUBLISHING_GUIDANCE = "PUBLISHING_GUIDANCE", OTHER = "OTHER",
+}
+export enum ServiceRequestStatus {
+    PENDING = "PENDING", ACCEPTED = "ACCEPTED", IN_PROGRESS = "IN_PROGRESS",
+    COMPLETED = "COMPLETED", REJECTED = "REJECTED",
+}
+export interface CreateServiceRequestPayload {
+  memoirId?: string; serviceType: ServiceType; description: string;
+  contactPhone: string; address: string; preferredDate?: string;
+}
+export interface ServiceRequest {
+  id: string; userId: string; memoirId?: string | null; serviceType: ServiceType;
+  details: string; contactPhone?: string | null; address?: string | null;
+  preferredDate?: string | null; status: ServiceRequestStatus; created_at: string;
+  updated_at?: string | null; user?: Partial<User>; memoir?: Partial<Memoir>;
+}
+export const submitServiceRequest = async (data: CreateServiceRequestPayload): Promise<ServiceRequest> => {
   try {
-    console.log("API: Submitting service request", data);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const newRequest: ServiceRequest = { ...data, id: `sr_${Math.random().toString(36).substring(2, 10)}`, userId: 'currentUserMockId', status: 'pending', createdAt: new Date().toISOString() };
-    return newRequest;
+    const payload = { ...data, details: data.description, };
+    const response = await apiClient.post<ServiceRequest>('/service-requests', payload, { headers: {'Content-Type': 'application/json'} });
+    return response.data;
   } catch (error) { throw new Error(`Failed to submit service request: ${getErrorMessage(error)}`); }
 };
-
 export const getUserServiceRequests = async (): Promise<ServiceRequest[]> => {
   try {
-    console.log("API: Fetching user's service requests");
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const mockRequests: ServiceRequest[] = [
-      { id: 'sr_1', userId: 'currentUserMockId', type: 'Plumbing', description: 'Leaky faucet in kitchen.', contactPhone: '123-456-7890', address: '123 Main St, Anytown', status: 'completed', createdAt: new Date(Date.now() - 86400000 * 5).toISOString(), preferredDate: new Date(Date.now() - 86400000 * 4).toISOString() },
-      { id: 'sr_2', userId: 'currentUserMockId', type: 'Electrical', description: 'Outlet not working in living room.', contactPhone: '123-456-7890', address: '123 Main St, Anytown', status: 'in-progress', createdAt: new Date(Date.now() - 86400000 * 2).toISOString() },
-    ];
-    return mockRequests;
+    const response = await apiClient.get<ServiceRequest[]>('/service-requests');
+    return response.data;
   } catch (error) { throw new Error(`Failed to get user service requests: ${getErrorMessage(error)}`); }
 };
-
 export const getServiceRequestById = async (id: string): Promise<ServiceRequest> => {
   try {
-    console.log(`API: Fetching service request by ID: ${id}`);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const list = await getUserServiceRequests();
-    const found = list.find(r => r.id === id);
-    if (found) return found;
-    return { id: id, userId: 'currentUserMockId', type: 'Mock Service Type', description: `This is a detailed description for service request ${id}.`, contactPhone: '555-0101', address: '456 Oak Ave, Mockville', status: 'pending', createdAt: new Date().toISOString() };
+    const response = await apiClient.get<ServiceRequest>(`/service-requests/${id}`);
+    return response.data;
   } catch (error) { throw new Error(`Failed to get service request by ID: ${getErrorMessage(error)}`); }
 };
 
@@ -227,115 +295,103 @@ export interface PublishOrder extends PublishOrderData { id: string; userId: str
 
 export const submitPublishOrder = async (data: PublishOrderData): Promise<PublishOrder> => {
   try {
-    console.log("API: Submitting publish order", data);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const newOrder: PublishOrder = { ...data, id: `po_${Math.random().toString(36).substring(2, 10)}`, userId: 'currentUserMockId', status: 'pending', createdAt: new Date().toISOString() };
-    return newOrder;
+    const response = await apiClient.post<PublishOrder>('/publish-orders', data, { headers: {'Content-Type': 'application/json'} });
+    return response.data;
   } catch (error) { throw new Error(`Failed to submit publish order: ${getErrorMessage(error)}`); }
 };
-
 export const getUserPublishOrders = async (): Promise<PublishOrder[]> => {
   try {
-    console.log("API: Fetching user's publish orders");
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const mockOrders: PublishOrder[] = [
-      { id: 'po_1', userId: 'currentUserMockId', memoirId: 'memoir123', format: 'paperback', quantity: 2, shippingAddress: '123 Reader Ln, Booksville', status: 'shipped', createdAt: new Date(Date.now() - 86400000 * 10).toISOString(), trackingNumber: 'TRK12345XYZ', estimatedDeliveryDate: new Date(Date.now() - 86400000 * 3).toISOString() },
-      { id: 'po_2', userId: 'currentUserMockId', memoirId: 'memoir456', format: 'ebook', quantity: 1, status: 'completed', createdAt: new Date(Date.now() - 86400000 * 5).toISOString() },
-    ];
-    return mockOrders;
+    const response = await apiClient.get<PublishOrder[]>('/publish-orders'); // Assuming endpoint gets orders for current user
+    return response.data;
   } catch (error) { throw new Error(`Failed to get user publish orders: ${getErrorMessage(error)}`); }
 };
-
 export const getPublishOrderById = async (id: string): Promise<PublishOrder> => {
   try {
-    console.log(`API: Fetching publish order by ID: ${id}`);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const list = await getUserPublishOrders();
-    const found = list.find(o => o.id === id);
-    if (found) return found;
-    return { id: id, userId: 'currentUserMockId', memoirId: 'memoir_fallback', format: 'paperback', quantity: 1, status: 'pending', createdAt: new Date().toISOString() };
+    const response = await apiClient.get<PublishOrder>(`/publish-orders/${id}`);
+    return response.data;
   } catch (error) { throw new Error(`Failed to get publish order by ID: ${getErrorMessage(error)}`); }
 };
 
-// --- Community / Public Memoir API ---
-export interface PublicMemoirSummary { id: string; title: string; authorId: string; authorNickname: string; snippet: string; likeCount: number; isPublic: true; }
-export interface MemoirCommentData { memoirId: string; text: string; } // For creating a comment
-export interface MemoirComment { id: string; memoirId: string; userId: string; userNickname: string; text: string; createdAt: string; }
 
-export const getPublicMemoirs = async (filters?: any): Promise<PublicMemoirSummary[]> => {
+// --- Community / Public Memoir API ---
+export interface AuthorInfo { id: string; name?: string; avatar_url?: string; nickname?: string; }
+export interface PublicChapter { id: string; title: string; content: string; order: number; }
+export interface PublicMemoirSummary {
+  id: string; title: string; is_public: boolean; created_at: string; updated_at: string;
+  author: AuthorInfo;
+  likeCount?: number; isLikedByCurrentUser?: boolean;
+  snippet?: string;
+}
+export interface PublicMemoirDetail {
+  id: string; title: string; is_public: boolean; created_at: string; updated_at: string;
+  author: AuthorInfo;
+  chapters: PublicChapter[];
+  content_html?: string | null;
+  likeCount?: number; isLikedByCurrentUser?: boolean;
+}
+export interface MemoirComment {
+  id: string; memoirId: string; userId: string;
+  user?: AuthorInfo;
+  text: string; created_at: string;
+}
+export interface AddCommentPayload { text: string; }
+export interface LikeResponse { success: boolean; likeCount: number; isLikedByCurrentUser?: boolean; }
+
+export const getPublicMemoirs = async (page: number = 1, limit: number = 10): Promise<{ data: PublicMemoirSummary[]; total: number; page: number; limit: number; }> => {
   try {
-    console.log("API (mock): Fetching public memoirs with filters:", filters);
-    await new Promise(resolve => setTimeout(resolve, 700));
-    // This would be: const response = await apiClient.get<PublicMemoirSummary[]>('/community/memoirs', { params: filters });
-    return [
-      { id: 'sample-public-id', title: 'A Journey Through Time', authorId: 'user123', authorNickname: 'TimeTraveler', snippet: 'This memoir recounts the incredible adventures across various eras...', likeCount: 155, isPublic: true },
-      { id: 'memoir-deux', title: 'Baking My Way to Happiness', authorId: 'user456', authorNickname: 'BakerExtraordinaire', snippet: 'Discover how a simple hobby turned into a life-changing passion for baking...', likeCount: 230, isPublic: true },
-      { id: 'memoir-trois', title: 'Coding the Future', authorId: 'user789', authorNickname: 'CodeWizard', snippet: 'Insights from a decade of software development, exploring the highs and lows...', likeCount: 98, isPublic: true },
-    ];
+    const response = await apiClient.get<{ data: PublicMemoirSummary[]; total: number; page: number; limit: number; }>('/memoirs/public', { params: { page, limit } });
+    return response.data;
   } catch (error) { throw new Error(`Failed to get public memoirs: ${getErrorMessage(error)}`); }
 };
 
-export const getPublicMemoirDetails = async (id: string): Promise<{ memoir: MemoirResponse; comments: MemoirComment[] }> => {
+export const getPublicMemoirDetails = async (memoirId: string): Promise<PublicMemoirDetail> => {
   try {
-    console.log(`API (mock): Fetching public memoir details for ID: ${id}`);
-    await new Promise(resolve => setTimeout(resolve, 600));
-    // This would be: const response = await apiClient.get<{ memoir: MemoirResponse; comments: MemoirComment[] }>(`/community/memoirs/${id}`);
-    // For the memoir part, we can reuse/enhance getMemoirById's mock or create a specific one
-    const memoirDetails = await getMemoirById(id); // Assuming getMemoirById gives enough detail (like content_html, author, etc.)
-    if (!memoirDetails.isPublic) { // Ensure only public memoirs are fetched this way, or backend handles it.
-        // throw new Error("This memoir is not public."); // Or handle as per app's requirements
-        console.warn(`API (mock): Memoir ${id} might not be public, but returning details for dev purposes.`);
-    }
-
-    const mockComments: MemoirComment[] = [
-      { id: 'comment1', memoirId: id, userId: 'userABC', userNickname: 'ReaderFan', text: 'What an inspiring story! Thanks for sharing.', createdAt: new Date(Date.now() - 86400000).toISOString() },
-      { id: 'comment2', memoirId: id, userId: 'userXYZ', userNickname: 'BookwormGal', text: 'Loved the part about the old library. So vivid!', createdAt: new Date().toISOString() },
-    ];
-    return { memoir: memoirDetails, comments: id === "sample-public-id" || id === "memoir-deux" ? mockComments : [] };
+    const response = await apiClient.get<PublicMemoirDetail>(`/memoirs/public/${memoirId}`);
+    return response.data;
   } catch (error) { throw new Error(`Failed to get public memoir details: ${getErrorMessage(error)}`); }
 };
 
-export const likeMemoir = async (memoirId: string): Promise<{ success: boolean; likeCount: number }> => {
+export const getCommentsForMemoir = async (memoirId: string): Promise<MemoirComment[]> => {
   try {
-    console.log(`API (mock): Liking memoir ${memoirId}`);
-    await new Promise(resolve => setTimeout(resolve, 300));
-    // This would be: const response = await apiClient.post<{ success: boolean; likeCount: number }>(`/memoirs/${memoirId}/like`); return response.data;
-    const currentMemoir = await getMemoirById(memoirId); // Fetch to get current like count for mock
-    return { success: true, likeCount: (currentMemoir.likeCount || 0) + 1 };
+    // TODO: Backend endpoint GET /memoirs/:memoirId/comments needs implementation.
+    const response = await apiClient.get<MemoirComment[]>(`/memoirs/${memoirId}/comments`);
+    return response.data;
+  } catch (error) { throw new Error(`Failed to get comments for memoir: ${getErrorMessage(error)}`); }
+};
+
+export const likeMemoir = async (memoirId: string): Promise<LikeResponse> => {
+  try {
+    // TODO: Backend endpoint POST /memoirs/:memoirId/like needs implementation.
+    const response = await apiClient.post<LikeResponse>(`/memoirs/${memoirId}/like`, {}, { headers: {'Content-Type': 'application/json'} });
+    return response.data;
   } catch (error) { throw new Error(`Failed to like memoir: ${getErrorMessage(error)}`); }
 };
 
-export const unlikeMemoir = async (memoirId: string): Promise<{ success: boolean; likeCount: number }> => {
+export const unlikeMemoir = async (memoirId: string): Promise<LikeResponse> => {
   try {
-    console.log(`API (mock): Unliking memoir ${memoirId}`);
-    await new Promise(resolve => setTimeout(resolve, 300));
-    // This would be: const response = await apiClient.delete<{ success: boolean; likeCount: number }>(`/memoirs/${memoirId}/like`); return response.data;
-    const currentMemoir = await getMemoirById(memoirId); // Fetch to get current like count for mock
-    return { success: true, likeCount: Math.max(0, (currentMemoir.likeCount || 0) - 1) };
+    // TODO: Backend endpoint DELETE /memoirs/:memoirId/like needs implementation.
+    const response = await apiClient.delete<LikeResponse>(`/memoirs/${memoirId}/like`);
+    return response.data;
   } catch (error) { throw new Error(`Failed to unlike memoir: ${getErrorMessage(error)}`); }
 };
 
-export const addCommentToMemoir = async (data: MemoirCommentData): Promise<MemoirComment> => {
+export const addCommentToMemoir = async (memoirId: string, data: AddCommentPayload): Promise<MemoirComment> => {
   try {
-    console.log(`API (mock): Adding comment to memoir ${data.memoirId}`, data.text);
-    await new Promise(resolve => setTimeout(resolve, 400));
-    // This would be: const response = await apiClient.post<MemoirComment>(`/memoirs/${data.memoirId}/comments`, { text: data.text }); return response.data;
-    return {
-      id: `comment${Math.random().toString(36).substring(2, 9)}`,
-      memoirId: data.memoirId,
-      userId: 'currentUserMockId', // This would be the actual logged-in user's ID
-      userNickname: 'CurrentUser', // Logged-in user's nickname
-      text: data.text,
-      createdAt: new Date().toISOString(),
-    };
+    // TODO: Backend endpoint POST /memoirs/:memoirId/comments needs implementation.
+    const response = await apiClient.post<MemoirComment>(`/memoirs/${memoirId}/comments`, data, { headers: {'Content-Type': 'application/json'} });
+    return response.data;
   } catch (error) { throw new Error(`Failed to add comment: ${getErrorMessage(error)}`); }
 };
+
 
 // Axios interceptor
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('authToken');
     if (token && config.headers) config.headers.Authorization = `Bearer ${token}`;
+    if (config.data && !(config.data instanceof FormData) && !config.headers['Content-Type']) {
+        config.headers['Content-Type'] = 'application/json';
+    }
     return config;
   },
   (error) => Promise.reject(error)

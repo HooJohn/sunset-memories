@@ -17,7 +17,8 @@ import UserPublishOrdersPage from './pages/publishing/UserPublishOrdersPage';
 // Community Pages
 import CommunityPage from './pages/community/CommunityPage';
 import ViewMemoirPage from './pages/community/ViewMemoirPage';
-
+// User specific pages
+import PendingInvitationsPage from './pages/user/PendingInvitationsPage'; // New import
 
 import './App.css'; // Assuming you still want App.css for global styles not covered by Tailwind
 
@@ -31,6 +32,7 @@ const HomePage: React.FC = () => (
         <li><Link to="/login" className="text-blue-500 hover:underline">Login</Link></li>
         <li><Link to="/register" className="text-blue-500 hover:underline">Register</Link></li>
         <li><Link to="/profile" className="text-blue-500 hover:underline">Profile</Link></li>
+        <li><Link to="/my-invitations" className="text-blue-500 hover:underline">My Invitations</Link></li> {/* New Link */}
 
         <hr className="my-3 border-gray-300"/>
         <li className="text-gray-500 text-sm uppercase">Memoirs</li>
@@ -67,6 +69,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/my-invitations" element={<PendingInvitationsPage />} /> {/* New Route */}
 
           {/* Memoir Routes */}
           <Route path="/memoirs/create" element={<CreateMemoirPage />} />
