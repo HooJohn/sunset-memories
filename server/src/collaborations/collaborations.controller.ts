@@ -21,7 +21,7 @@ import { MemoirsService } from '../memoirs/memoirs.service';
 import { MemoirCollaboration } from '../memoirs/entities/memoir-collaboration.entity';
 import { RespondToInvitationDto } from '../memoirs/dto/respond-to-invitation.dto';
 // import { CollaborationStatus } from '../memoirs/enums/collaboration-status.enum'; // Not directly used, DTO uses it
-import { UpdateCollaborationRoleDto } from '../memoirs/dto/update-collaboration-role.dto.ts'; // Added import
+import { UpdateCollaborationRoleDto } from '../memoirs/dto/update-collaboration-role.dto'; // Added import
 // import { CollaborationRole } from '../memoirs/enums/collaboration-role.enum'; // Not directly used, DTO uses it
 
 
@@ -74,7 +74,7 @@ export class CollaborationsController {
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   async updateCollaboratorRole(
     @Param('collaborationId', ParseUUIDPipe) collaborationId: string,
-    @Body() updateDto: UpdateCollaborationRoleDto, // DTO created in this subtask
+    @Body() updateDto: UpdateCollaborationRoleDto,
     @Req() req: AuthenticatedRequest,
   ): Promise<MemoirCollaboration> {
     this.logger.log(`User ${req.user.userId} attempting to update role for collaboration ${collaborationId} to ${updateDto.role}`);

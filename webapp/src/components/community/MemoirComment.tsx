@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MemoirComment as CommentType } from '../../services/api'; // Uses updated interface
+import type { MemoirComment as CommentType } from '../../services/api'; // Uses updated interface
 
 interface MemoirCommentProps {
   comment: CommentType;

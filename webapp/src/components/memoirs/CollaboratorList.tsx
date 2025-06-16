@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { MemoirCollaboration, CollaborationRole } from '../../services/api'; // Use new types
+import { CollaborationRole, CollaborationStatus } from '../../services/api';
+import type { MemoirCollaboration } from '../../services/api';
 
 interface CollaboratorListProps {
   collaborators: MemoirCollaboration[];

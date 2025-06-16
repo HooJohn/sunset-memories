@@ -175,15 +175,19 @@ export const deleteMemoir = async (memoirId: string): Promise<void> => {
 };
 
 // --- Collaboration API ---
-export enum CollaborationRole {
-  VIEWER = 'viewer',
-  EDITOR = 'editor',
-}
-export enum CollaborationStatus {
-  PENDING = 'pending',
-  ACCEPTED = 'accepted',
-  REJECTED = 'rejected',
-}
+export const CollaborationRole = {
+  VIEWER: 'viewer',
+  EDITOR: 'editor',
+} as const;
+export type CollaborationRole = typeof CollaborationRole[keyof typeof CollaborationRole];
+
+export const CollaborationStatus = {
+  PENDING: 'pending',
+  ACCEPTED: 'accepted',
+  REJECTED: 'rejected',
+} as const;
+export type CollaborationStatus = typeof CollaborationStatus[keyof typeof CollaborationStatus];
+
 export interface MemoirCollaboration {
   id: string;
   memoirId: string;
@@ -205,7 +209,7 @@ export interface InviteCollaboratorPayload {
   role: CollaborationRole;
 }
 export interface RespondToInvitationPayload {
-  status: CollaborationStatus.ACCEPTED | CollaborationStatus.REJECTED;
+  status: 'accepted' | 'rejected';
 }
 
 export const getCollaborators = async (memoirId: string): Promise<MemoirCollaboration[]> => {
@@ -248,15 +252,25 @@ export const removeCollaborator = async (collaborationId: string): Promise<void>
 
 
 // --- Service Request API ---
-export enum ServiceType {
-    EDITING_ASSISTANCE = "EDITING_ASSISTANCE", INTERVIEW_HELP = "INTERVIEW_HELP",
-    TECHNICAL_SUPPORT = "TECHNICAL_SUPPORT", PHOTO_ORGANIZATION = "PHOTO_ORGANIZATION",
-    PUBLISHING_GUIDANCE = "PUBLISHING_GUIDANCE", OTHER = "OTHER",
-}
-export enum ServiceRequestStatus {
-    PENDING = "PENDING", ACCEPTED = "ACCEPTED", IN_PROGRESS = "IN_PROGRESS",
-    COMPLETED = "COMPLETED", REJECTED = "REJECTED",
-}
+export const ServiceType = {
+  EDITING_ASSISTANCE: "EDITING_ASSISTANCE",
+  INTERVIEW_HELP: "INTERVIEW_HELP",
+  TECHNICAL_SUPPORT: "TECHNICAL_SUPPORT",
+  PHOTO_ORGANIZATION: "PHOTO_ORGANIZATION",
+  PUBLISHING_GUIDANCE: "PUBLISHING_GUIDANCE",
+  OTHER: "OTHER",
+} as const;
+export type ServiceType = typeof ServiceType[keyof typeof ServiceType];
+
+export const ServiceRequestStatus = {
+  PENDING: "PENDING",
+  ACCEPTED: "ACCEPTED",
+  IN_PROGRESS: "IN_PROGRESS",
+  COMPLETED: "COMPLETED",
+  REJECTED: "REJECTED",
+} as const;
+export type ServiceRequestStatus = typeof ServiceRequestStatus[keyof typeof ServiceRequestStatus];
+
 export interface CreateServiceRequestPayload {
   memoirId?: string; serviceType: ServiceType; description: string;
   contactPhone: string; address: string; preferredDate?: string;

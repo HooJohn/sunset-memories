@@ -110,7 +110,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscriptionComplete }
   return (
     <div className="p-4 border border-gray-300 rounded-lg text-center">
       <p className="mb-4 text-gray-700 dark:text-gray-300 min-h-[40px]">{statusMessage}</p>
-      {status === 'idle' || status === 'error' || (status === 'stopped' && !audioBlob) ? (
+      {!['recording', 'transcribing'].includes(status) && (
         <button
           type="button"
           onClick={handleStartRecording}
@@ -119,7 +119,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscriptionComplete }
         >
           Start Recording
         </button>
-      ) : null}
+      )}
       {status === 'recording' ? (
         <button
           type="button"

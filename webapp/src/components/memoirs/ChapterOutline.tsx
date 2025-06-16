@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { generateChapters, Chapter as ApiChapter } from '../../services/api'; // Using Chapter from api.ts
+import { generateChapters } from '../../services/api'; // Using Chapter from api.ts
+import type { Chapter as ApiChapter } from '../../services/api';
 
 // Re-export or use ApiChapter directly if its structure matches what this component needs.
 // For this component, we might not need 'id' if it's just for display before saving.
@@ -31,7 +32,7 @@ const ChapterOutline: React.FC<ChapterOutlineProps> = ({
           const response = await generateChapters(transcribedText); // Use actual API
           // The API returns { chapters: ApiChapter[] }.
           // We can map them if needed, e.g., to add temporary client-side IDs for keys
-          const fetchedChapters: Chapter[] = response.chapters.map((ch, index) => ({
+          const fetchedChapters: Chapter[] = response.chapters.map((ch) => ({
             ...ch,
             // id: ch.id || `temp-${index}` // If API doesn't return ID, but Chapter interface expects it
           }));

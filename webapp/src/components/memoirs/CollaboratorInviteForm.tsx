@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { CollaborationRole, InviteCollaboratorPayload } from '../../services/api'; // Import new types
+import { CollaborationRole } from '../../services/api';
+import type { InviteCollaboratorPayload } from '../../services/api';
 
 interface CollaboratorInviteFormProps {
   // onSubmit now matches the structure of api.inviteCollaborator payload, memoirId is handled by parent
