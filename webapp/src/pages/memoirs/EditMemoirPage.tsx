@@ -96,7 +96,7 @@ const EditMemoirPage: React.FC = () => {
   };
 
   if (status === 'loading') {
-    return <div className="text-center p-10"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div><p className="text-xl text-blue-600 dark:text-blue-400 mt-4">Loading memoir...</p></div>;
+    return <div className="text-center p-10"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div><p className="text-xl text-blue-600 dark:text-blue-400 mt-4">加载回忆录中...</p></div>;
   }
 
   if (status === 'error' && apiError) { // Ensure apiError is present before showing error state
@@ -108,7 +108,7 @@ const EditMemoirPage: React.FC = () => {
                 onClick={() => navigate('/')}
                 className="mt-6 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             >
-                Go Home
+                返回首页
             </button>
         </div>
     );
@@ -118,12 +118,12 @@ const EditMemoirPage: React.FC = () => {
   return (
     <div className="container mx-auto p-4">
       <form onSubmit={handleUpdateMemoir} className="p-6 bg-white dark:bg-gray-800 shadow-xl rounded-lg">
-        <h1 className="text-3xl font-bold mb-8 text-center text-gray-800 dark:text-gray-200">Edit Memoir</h1>
+        <h1 className="text-3xl font-bold mb-8 text-center text-gray-800 dark:text-gray-200">编辑回忆录</h1>
 
         <div className="space-y-6">
             <div>
                 <label htmlFor="memoirTitleEdit" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Memoir Title
+                    回忆录标题
                 </label>
                 <input
                     type="text"
@@ -131,14 +131,14 @@ const EditMemoirPage: React.FC = () => {
                     name="memoirTitleEdit"
                     value={memoirTitle}
                     onChange={(e) => setMemoirTitle(e.target.value)}
-                    placeholder="Enter memoir title"
+                    placeholder="输入回忆录标题"
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
                     disabled={status === 'saving'}
                 />
             </div>
 
             <div>
-                <h2 className="text-xl font-semibold mb-2 text-gray-700 dark:text-gray-300">Edit Content</h2>
+                <h2 className="text-xl font-semibold mb-2 text-gray-700 dark:text-gray-300">编辑内容</h2>
                 {(status === 'loaded' || status === 'editing' || status === 'saving' || status === 'saved') ? (
                 <RichTextEditor
                     initialContent={editorInitialContent}
@@ -146,7 +146,7 @@ const EditMemoirPage: React.FC = () => {
                     editorRef={editorRef}
                 />
                 ) : (
-                <p className="dark:text-gray-300">Editor is loading content...</p>
+                <p className="dark:text-gray-300">编辑器正在加载内容...</p>
                 )}
             </div>
 
@@ -161,14 +161,14 @@ const EditMemoirPage: React.FC = () => {
                     disabled={status === 'saving'}
                 />
                 <label htmlFor="is_public" className="ml-2 block text-sm text-gray-900 dark:text-gray-300">
-                    Make this memoir public?
+                    公开此回忆录
                 </label>
             </div>
 
             {/* Displaying chapters (read-only for now, could be editable in future) */}
             {chapters && chapters.length > 0 && (
                 <div>
-                    <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">Chapters:</h3>
+                    <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">章节：</h3>
                     <ul className="list-disc list-inside pl-5 mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-400">
                         {chapters.map((chap, idx) => <li key={chap.id || idx}>{chap.title}{chap.summary ? ` - ${chap.summary.substring(0,50)}...` : ''}</li>)}
                     </ul>
@@ -176,7 +176,7 @@ const EditMemoirPage: React.FC = () => {
             )}
         </div>
 
-        {updateSuccess && status === 'saved' && <p className="text-green-600 dark:text-green-400 mt-4 text-center p-2 bg-green-50 dark:bg-green-900 rounded-md">{updateSuccess}</p>}
+        {updateSuccess && status === 'saved' && <p className="text-green-600 dark:text-green-400 mt-4 text-center p-2 bg-green-50 dark:bg-green-900 rounded-md">回忆录更新成功！</p>}
         {apiError && status === 'error' && <p className="text-red-600 dark:text-red-400 mt-4 text-center p-2 bg-red-50 dark:bg-red-900 rounded-md">{apiError}</p>}
 
 
@@ -185,10 +185,10 @@ const EditMemoirPage: React.FC = () => {
                 <button
                     type="submit"
                     disabled={status === 'saving'}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:bg-gray-400 dark:disabled:bg-gray-600"
-            >
-                {status === 'saving' ? 'Saving...' : 'Update Memoir'}
-            </button>
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:bg-gray-400 dark:disabled:bg-gray-600"
+                >
+                    {status === 'saving' ? '保存中...' : '更新回忆录'}
+                </button>
           </div>
         </div>
       </form>

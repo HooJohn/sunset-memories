@@ -31,7 +31,7 @@ const UserPublishOrdersPage: React.FC = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">My Publish Orders</h1>
+        <h1 className="text-3xl font-bold text-gray-800">我的出版订单</h1>
         {/* Optional: Link to a general publishing info page or memoir list to start a new order */}
         {/* <Link
           to="/memoirs" // Example: link to a page where user can select a memoir to publish
@@ -41,11 +41,11 @@ const UserPublishOrdersPage: React.FC = () => {
         </Link> */}
       </div>
 
-      {isLoading && <p className="text-center text-gray-600">Loading your publish orders...</p>}
-      {error && <p className="text-center text-red-500 bg-red-100 p-3 rounded-md">{error}</p>}
+      {isLoading && <p className="text-center text-gray-600">正在加载您的出版订单...</p>}
+      {error && <p className="text-center text-red-500 bg-red-100 p-3 rounded-md">错误：{error}</p>}
 
       {!isLoading && !error && orders.length === 0 && (
-        <p className="text-center text-gray-600">You have not placed any publish orders yet.</p>
+        <p className="text-center text-gray-600">您尚未创建任何出版订单</p>
       )}
 
       {!isLoading && !error && orders.length > 0 && (

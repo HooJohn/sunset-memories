@@ -23,7 +23,7 @@ const ServiceRequestPage: React.FC = () => {
       // If memoirId came from route and should override form, set it here:
       // const payload = { ...formData, memoirId: memoirIdFromRoute || formData.memoirId };
       const newRequest = await submitServiceRequest(formData); // formData now matches CreateServiceRequestPayload
-      setSuccessMessage(`Service request submitted successfully! Request ID: ${newRequest.id}. You will be redirected shortly.`);
+      setSuccessMessage(`服务请求提交成功！请求ID：${newRequest.id}。即将跳转页面...`);
       setTimeout(() => {
         navigate('/my-requests');
       }, 3000);
@@ -40,12 +40,12 @@ const ServiceRequestPage: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-8 text-center text-gray-800 dark:text-gray-200">Submit a Service Request</h1>
+      <h1 className="text-3xl font-bold mb-8 text-center text-gray-800 dark:text-gray-200">提交服务请求</h1>
 
       <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-lg shadow-xl">
         {/* General error display, though form also has its own error display */}
         {error && !isSubmitting && !successMessage && (
-          <p className="text-red-500 dark:text-red-400 bg-red-100 dark:bg-red-900 p-3 rounded-md text-center mb-6">{error}</p>
+          <p className="text-red-500 dark:text-red-400 bg-red-100 dark:bg-red-900 p-3 rounded-md text-center mb-6">错误：{error}</p>
         )}
         {successMessage && (
           <p className="text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900 p-3 rounded-md text-center mb-6">{successMessage}</p>

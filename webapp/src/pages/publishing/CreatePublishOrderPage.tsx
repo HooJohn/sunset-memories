@@ -48,7 +48,7 @@ const CreatePublishOrderPage: React.FC = () => {
     try {
       const fullOrderData: PublishOrderData = { ...formData, memoirId };
       const newOrder = await submitPublishOrder(fullOrderData);
-      setSuccessMessage(`Publish order submitted successfully! Order ID: ${newOrder.id}. You will be redirected shortly.`);
+      setSuccessMessage(`出版订单提交成功！订单ID: ${newOrder.id}。即将跳转页面...`);
       setTimeout(() => {
         navigate('/my-publish-orders'); // Or a specific page for the new order
       }, 3000);
@@ -62,29 +62,29 @@ const CreatePublishOrderPage: React.FC = () => {
   };
 
   if (isLoadingMemoir) {
-    return <p className="text-center p-10">Loading memoir details...</p>;
+    return <p className="text-center p-10">加载回忆录详情中...</p>;
   }
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-8 text-center text-gray-800">Create Publish Order</h1>
+      <h1 className="text-3xl font-bold mb-8 text-center text-gray-800">创建出版订单</h1>
 
       {error && !isSubmittingOrder && (
-        <p className="text-red-500 bg-red-100 p-3 rounded-md text-center mb-6">{error}</p>
+        <p className="text-red-500 bg-red-100 p-3 rounded-md text-center mb-6">错误：{error}</p>
       )}
       {successMessage && (
         <p className="text-green-500 bg-green-100 p-3 rounded-md text-center mb-6">{successMessage}</p>
       )}
 
       {!memoir && !isLoadingMemoir && !error && (
-         <p className="text-center text-red-500">Memoir details could not be loaded. Cannot create a publish order.</p>
+         <p className="text-center text-red-500">无法加载回忆录详情，无法创建出版订单</p>
       )}
 
       {memoir && !successMessage && ( // Hide form on success
         <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-lg">
           <div className="mb-6 pb-4 border-b border-gray-200">
-            <h2 className="text-2xl font-semibold text-indigo-700">Publishing: "{memoir.title}"</h2>
-            <p className="text-sm text-gray-600">Memoir ID: {memoir.id}</p>
+            <h2 className="text-2xl font-semibold text-indigo-700">出版中: "{memoir.title}"</h2>
+            <p className="text-sm text-gray-600">回忆录ID: {memoir.id}</p>
           </div>
           <PublishOrderForm
             onSubmit={handleSubmitOrder}

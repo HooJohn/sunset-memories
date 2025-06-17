@@ -97,45 +97,45 @@ const CreateMemoirPage: React.FC = () => {
     if (currentStep === CreationStep.Error) {
       return (
         <div className="p-6 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 rounded-lg">
-            <h2 className="text-2xl font-semibold mb-2">Error Saving Memoir</h2>
-            <p>{saveError || "An unexpected error occurred."}</p>
+            <h2 className="text-2xl font-semibold mb-2">保存回忆录时出错</h2>
+            <p>{saveError || "发生未知错误"}</p>
             <button
                 type="button"
                 onClick={() => setCurrentStep(CreationStep.Editing)}
                 className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             >
-                Return to Editing
+                返回编辑
             </button>
         </div>
       );
     }
     if (currentStep === CreationStep.Saving) {
-        return <div className="text-center p-10"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div><p className="text-xl text-blue-600 dark:text-blue-400 mt-4">Saving your memoir...</p></div>;
+        return <div className="text-center p-10"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div><p className="text-xl text-blue-600 dark:text-blue-400 mt-4">保存中...</p></div>;
     }
     if (currentStep === CreationStep.Saved) {
         return (
             <div className="text-center p-10">
-                <p className="text-xl text-green-600 dark:text-green-400">Memoir saved successfully!</p>
-                <p className="mt-2 dark:text-gray-300">Redirecting to your memoir shortly...</p>
-                {newMemoirId && <p className="mt-1 text-sm dark:text-gray-400">Memoir ID: {newMemoirId}</p>}
+                <p className="text-xl text-green-600 dark:text-green-400">回忆录保存成功!</p>
+                <p className="mt-2 dark:text-gray-300">即将重定向到您的回忆录...</p>
+                {newMemoirId && <p className="mt-1 text-sm dark:text-gray-400">回忆录ID: {newMemoirId}</p>}
             </div>
         );
     }
     return (
         <>
             <section className={`p-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg ${currentStep !== CreationStep.Recording ? 'opacity-60 blur-[2px]' : ''}`}>
-                <h2 className="text-2xl font-semibold mb-4 text-indigo-700 dark:text-indigo-400">Step 1: Record Your Story</h2>
+                <h2 className="text-2xl font-semibold mb-4 text-indigo-700 dark:text-indigo-400">步骤1: 录制您的故事</h2>
                 {currentStep === CreationStep.Recording ? (
                 <VoiceRecorder onTranscriptionComplete={handleTranscriptionComplete} />
                 ) : (
                 <p className="text-gray-600 dark:text-gray-300">
-                    {transcribedText ? "Recording complete. Proceeding to outline..." : "Waiting to start recording..."}
+                    {transcribedText ? "录制完成，正在处理大纲..." : "等待开始录制..."}
                 </p>
                 )}
             </section>
 
             <section className={`p-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg mt-8 ${currentStep !== CreationStep.OutlineGeneration ? 'opacity-60 blur-[2px]' : ''} ${currentStep < CreationStep.OutlineGeneration ? 'hidden' : ''}`}>
-                <h2 className="text-2xl font-semibold mb-4 text-indigo-700 dark:text-indigo-400">Step 2: Review Chapter Outline</h2>
+                <h2 className="text-2xl font-semibold mb-4 text-indigo-700 dark:text-indigo-400">步骤2: 查看章节大纲</h2>
                 {currentStep === CreationStep.OutlineGeneration ? (
                 <ChapterOutline
                     transcribedText={transcribedText}
@@ -143,16 +143,16 @@ const CreateMemoirPage: React.FC = () => {
                 />
                 ) : (
                 <p className="text-gray-600 dark:text-gray-300">
-                    {generatedOutline ? "Chapter outline generated. Proceeding to editor..." : transcribedText ? "Generating outline..." : "Waiting for recording to complete..."}
+                    {generatedOutline ? "章节大纲已生成，正在进入编辑..." : transcribedText ? "正在生成大纲..." : "等待录制完成..."}
                 </p>
                 )}
             </section>
 
             <section className={`p-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg mt-8 ${currentStep < CreationStep.Editing ? 'hidden' : ''}`}>
-                <h2 className="text-2xl font-semibold mb-4 text-indigo-700 dark:text-indigo-400">Step 3: Write and Edit Your Memoir</h2>
+                <h2 className="text-2xl font-semibold mb-4 text-indigo-700 dark:text-indigo-400">步骤3: 撰写和编辑您的回忆录</h2>
                 <div className="mb-6">
                     <label htmlFor="memoirTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Memoir Title
+                        回忆录标题
                     </label>
                     <input
                         type="text"
@@ -160,7 +160,7 @@ const CreateMemoirPage: React.FC = () => {
                         name="memoirTitle"
                         value={memoirTitle}
                         onChange={(e) => setMemoirTitle(e.target.value)}
-                        placeholder="Enter your memoir title"
+                        placeholder="输入回忆录标题"
                         className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
                         disabled={currentStep > CreationStep.Editing}
                     />
@@ -177,7 +177,7 @@ const CreateMemoirPage: React.FC = () => {
                     disabled={currentStep !== CreationStep.Editing}
                     className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:bg-gray-400 dark:disabled:bg-gray-600"
                     >
-                    Save Memoir
+                    保存回忆录
                     </button>
                 </div>
             </section>
@@ -187,7 +187,7 @@ const CreateMemoirPage: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4 space-y-8">
-      <h1 className="text-3xl font-bold mb-6 text-center text-gray-800 dark:text-gray-200">Create New Memoir</h1>
+      <h1 className="text-3xl font-bold mb-6 text-center text-gray-800 dark:text-gray-200">创建新回忆录</h1>
       {renderStepContent()}
     </div>
   );

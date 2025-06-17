@@ -1,92 +1,86 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { login } from '../../services/api'; // Assuming api.ts exports login
+import { useNavigate, Link } from 'react-router-dom';
+import { login } from '../../services/api';
 
 const LoginPage: React.FC = () => {
   const [phone, setPhone] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError(null);
-
-    if (!phone.trim()) {
-      setError('Phone number is required.');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    
+    if (!phone) {
+      setError('请输入手机号码');
       return;
     }
-    if (!verificationCode.trim()) {
-      setError('Verification code is required.');
+    if (!password) {
+      setError('请输入密码');
       return;
     }
 
     setLoading(true);
     try {
-      // The login function in api.ts needs to be adjusted
-      // to accept phone and verificationCode
-      const response = await login({ phone, verificationCode });
-
-      // Assuming login function stores the token internally as discussed in api.ts
-      // For example, localStorage.setItem('authToken', response.token);
-      console.log('Login successful:', response); // Placeholder for actual token storage
-
+      await login({ phone, password });
       navigate('/profile');
     } catch (err) {
-      setError('Login failed. Please check your credentials or try again later.');
-      console.error('Login error:', err);
+      setError('登录失败，请检查您的手机号和密码是否正确');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Login</h2>
-        {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="Enter your phone number"
-              disabled={loading}
-            />
-          </div>
-          <div>
-            <label htmlFor="verificationCode" className="block text-sm font-medium text-gray-700">
-              Verification Code
-            </label>
-            <input
-              type="text" // Or "number" if it's always numeric
-              id="verificationCode"
-              name="verificationCode"
-              value={verificationCode}
-              onChange={(e) => setVerificationCode(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="Enter your verification code"
-              disabled={loading}
-            />
-          </div>
-          <div>
+    <div className="min-h-screen flex items-center justify-center bg-senior-friendly-background p-4">
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-lg shadow-lg p-8">
+          <h2 className="text-3xl font-bold mb-6 text-center text-senior-friendly-text">登录</h2>
+          
+          {error && <div className="text-red-600 mb-4 p-3 bg-red-100 rounded-lg text-center">{error}</div>}
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-lg mb-2 text-senior-friendly-text">手机号码</label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full p-4 border border-senior-friendly-border rounded-lg text-lg"
+                placeholder="请输入您的手机号"
+                disabled={loading}
+              />
+            </div>
+            
+            <div>
+              <label className="block text-lg mb-2 text-senior-friendly-text">密码</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full p-4 border border-senior-friendly-border rounded-lg text-lg"
+                placeholder="请输入您的密码"
+                disabled={loading}
+              />
+            </div>
+            
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400"
+              className="w-full p-4 bg-senior-friendly-primary text-white rounded-lg text-xl font-bold hover:bg-senior-friendly-primary-hover disabled:bg-gray-400"
             >
-              {loading ? 'Logging in...' : 'Login'}
+              {loading ? '登录中...' : '登录'}
             </button>
+          </form>
+          
+          <div className="mt-6 text-center">
+            <p className="text-lg">
+              还没有账号? <Link to="/register" className="text-senior-friendly-primary hover:underline">立即注册</Link>
+            </p>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

@@ -50,7 +50,7 @@ const PendingInvitationsPage: React.FC = () => {
   };
 
   if (isLoading) {
-    return <div className="text-center p-10"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div><p className="dark:text-gray-300 mt-4">Loading invitations...</p></div>;
+    return <div className="text-center p-10"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div><p className="dark:text-gray-300 mt-4">加载邀请中...</p></div>;
   }
 
   if (error) {
@@ -59,10 +59,10 @@ const PendingInvitationsPage: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-8 text-center text-gray-800 dark:text-gray-200">Pending Collaboration Invitations</h1>
+      <h1 className="text-3xl font-bold mb-8 text-center text-gray-800 dark:text-gray-200">待处理协作邀请</h1>
 
       {invitations.length === 0 && !isLoading && (
-        <p className="text-center text-gray-600 dark:text-gray-400">You have no pending invitations.</p>
+        <p className="text-center text-gray-600 dark:text-gray-400">您当前没有待处理的邀请</p>
       )}
 
       {invitations.length > 0 && (
@@ -70,13 +70,13 @@ const PendingInvitationsPage: React.FC = () => {
           {invitations.map(invitation => (
             <div key={invitation.id} className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6 border border-gray-200 dark:border-gray-700">
               <h2 className="text-xl font-semibold text-indigo-700 dark:text-indigo-400 mb-2">
-                Invitation for Memoir: {invitation.memoir?.title || invitation.memoirId}
+                回忆录邀请: {invitation.memoir?.title || invitation.memoirId}
               </h2>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                Invited by: {invitation.user?.nickname || invitation.user?.name || 'User ' + invitation.userId.substring(0,6)}
+                邀请人: {invitation.user?.nickname || invitation.user?.name || '用户 ' + invitation.userId.substring(0,6)}
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                Requested Role: <span className="font-medium capitalize">{invitation.role}</span>
+                请求角色: <span className="font-medium capitalize">{invitation.role}</span>
               </p>
 
               {invitation.status === CollaborationStatus.PENDING && (
@@ -86,29 +86,29 @@ const PendingInvitationsPage: React.FC = () => {
                     disabled={actionLoading[invitation.id]}
                     className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-md shadow-sm disabled:bg-gray-400"
                   >
-                    {actionLoading[invitation.id] ? 'Processing...' : 'Accept'}
+                    {actionLoading[invitation.id] ? '处理中...' : '接受'}
                   </button>
                   <button
                     onClick={() => handleResponse(invitation.id, 'rejected')}
                     disabled={actionLoading[invitation.id]}
                     className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md shadow-sm disabled:bg-gray-400"
                   >
-                    {actionLoading[invitation.id] ? 'Processing...' : 'Reject'}
+                    {actionLoading[invitation.id] ? '处理中...' : '拒绝'}
                   </button>
                 </div>
               )}
               {invitation.status === CollaborationStatus.ACCEPTED && (
-                <p className="text-green-600 dark:text-green-400 font-semibold">You have accepted this invitation.</p>
+                <p className="text-green-600 dark:text-green-400 font-semibold">您已接受此邀请</p>
               )}
               {actionError[invitation.id] && <p className="text-red-500 dark:text-red-400 mt-2 text-sm">{actionError[invitation.id]}</p>}
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-3">Invitation ID: {invitation.id}</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-3">邀请ID: {invitation.id}</p>
             </div>
           ))}
         </div>
       )}
       <div className="mt-8 text-center">
         <Link to="/profile" className="text-indigo-600 dark:text-indigo-400 hover:underline">
-          &larr; Back to Profile
+          &larr; 返回个人资料
         </Link>
       </div>
     </div>

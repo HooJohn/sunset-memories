@@ -25,8 +25,8 @@ async function bootstrap() {
 
   // Enable CORS if your client is on a different origin
   app.enableCors({
-    origin: process.env.CLIENT_URL || 'http://localhost:3000', // Adjust as needed
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    origin: 'http://localhost:5173',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
 

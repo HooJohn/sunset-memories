@@ -7,7 +7,7 @@ interface MemoirCommentProps {
 }
 
 const MemoirComment: React.FC<MemoirCommentProps> = ({ comment }) => {
-  const authorName = comment.user?.nickname || comment.user?.name || 'Anonymous User';
+  const authorName = comment.user?.nickname || comment.user?.name || '匿名用户';
   const authorIdForLink = comment.user?.id || '#'; // Fallback link if author ID is missing
   const avatarUrl = comment.user?.avatar_url;
 

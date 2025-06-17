@@ -28,7 +28,8 @@ export class UsersService {
     return this.userRepository.findOne({ where: { id } });
   }
 
-  async create(createUserDto: CreateUserDto): Promise<User> { // Changed to use CreateUserDto
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    // 不再进行密码哈希，因为AuthService已经处理过
     const newUser = this.userRepository.create(createUserDto);
     return this.userRepository.save(newUser);
   }

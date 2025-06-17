@@ -25,38 +25,31 @@ import './App.css'; // Assuming you still want App.css for global styles not cov
 // A simple placeholder for a home page component
 const HomePage: React.FC = () => (
   <div className="text-center p-10">
-    <h2 className="text-3xl font-bold mb-4">Home Page</h2>
-    <p className="mb-6">Welcome to the application!</p>
-    <nav>
-      <ul className="space-y-2">
-        <li><Link to="/login" className="text-blue-500 hover:underline">Login</Link></li>
-        <li><Link to="/register" className="text-blue-500 hover:underline">Register</Link></li>
-        <li><Link to="/profile" className="text-blue-500 hover:underline">Profile</Link></li>
-        <li><Link to="/my-invitations" className="text-blue-500 hover:underline">My Invitations</Link></li> {/* New Link */}
-
-        <hr className="my-3 border-gray-300"/>
-        <li className="text-gray-500 text-sm uppercase">Memoirs</li>
-        <li><Link to="/memoirs/create" className="text-green-500 hover:underline">Create New Memoir</Link></li>
-        <li><Link to="/memoirs/edit/123" className="text-yellow-600 hover:underline">Edit Memoir (ID 123)</Link></li>
-        <li><Link to="/memoirs/123/collaborators" className="text-purple-600 hover:underline">Manage Collaborators (Memoir ID 123)</Link></li>
-        <li><Link to="/memoirs/123/publish" className="text-red-500 hover:underline">Publish Memoir (ID 123)</Link></li>
-
-
-        <hr className="my-3 border-gray-300"/>
-        <li className="text-gray-500 text-sm uppercase">Service Requests</li>
-        <li><Link to="/services/request" className="text-teal-500 hover:underline">Submit Service Request</Link></li>
-        <li><Link to="/my-requests" className="text-cyan-500 hover:underline">My Service Requests</Link></li>
-
-        <hr className="my-3 border-gray-300"/>
-        <li className="text-gray-500 text-sm uppercase">Publishing</li>
-        <li><Link to="/my-publish-orders" className="text-pink-500 hover:underline">My Publish Orders</Link></li>
-
-        <hr className="my-3 border-gray-300"/>
-        <li className="text-gray-500 text-sm uppercase">Community</li>
-        <li><Link to="/community" className="text-orange-500 hover:underline">Community Feed</Link></li>
-        <li><Link to="/community/memoirs/sample-public-id" className="text-lime-500 hover:underline">View Sample Public Memoir</Link></li>
-      </ul>
-    </nav>
+    <h2 className="text-3xl font-bold mb-4">记录您的故事，分享您的回忆</h2>
+    <p className="mb-6 text-lg">一个专为老年用户设计的平台，旨在帮助他们轻松记录、整理和分享自己的回忆录。</p>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-10">
+      <div className="bg-white p-6 rounded-lg shadow-lg">
+        <h3 className="text-2xl font-bold mb-4">创建回忆录</h3>
+        <p className="mb-4">通过简单的步骤，开始撰写您的第一篇回忆录。</p>
+        <Link to="/memoirs/create" className="bg-senior-friendly-primary text-white px-6 py-3 rounded-lg hover:bg-senior-friendly-primary-hover">
+          开始创作
+        </Link>
+      </div>
+      <div className="bg-white p-6 rounded-lg shadow-lg">
+        <h3 className="text-2xl font-bold mb-4">社区分享</h3>
+        <p className="mb-4">浏览社区中的其他回忆录，与他人分享您的故事。</p>
+        <Link to="/community" className="bg-senior-friendly-primary text-white px-6 py-3 rounded-lg hover:bg-senior-friendly-primary-hover">
+          进入社区
+        </Link>
+      </div>
+      <div className="bg-white p-6 rounded-lg shadow-lg">
+        <h3 className="text-2xl font-bold mb-4">寻求帮助</h3>
+        <p className="mb-4">需要帮助？我们可以提供写作、编辑等服务。</p>
+        <Link to="/services/request" className="bg-senior-friendly-primary text-white px-6 py-3 rounded-lg hover:bg-senior-friendly-primary-hover">
+          请求服务
+        </Link>
+      </div>
+    </div>
   </div>
 );
 

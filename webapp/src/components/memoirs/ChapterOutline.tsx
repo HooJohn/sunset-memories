@@ -39,7 +39,7 @@ const ChapterOutline: React.FC<ChapterOutlineProps> = ({
           setChapters(fetchedChapters);
           onOutlineGenerated(fetchedChapters);
         } catch (err) {
-          const errorMessage = err instanceof Error ? err.message : "An unknown error occurred during outline generation.";
+          const errorMessage = err instanceof Error ? err.message : "生成大纲时发生未知错误。";
           console.error("Outline generation failed:", errorMessage);
           setError(errorMessage);
         } finally {
@@ -58,21 +58,21 @@ const ChapterOutline: React.FC<ChapterOutlineProps> = ({
   if (!transcribedText) {
     return (
       <div className="p-4 border border-gray-300 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
-        <p className="text-gray-500 dark:text-gray-400 text-center">Waiting for transcribed text to generate outline...</p>
+        <p className="text-gray-500 dark:text-gray-400 text-center">等待转录文本以生成大纲...</p>
       </div>
     );
   }
 
   return (
     <div className="p-4 border border-gray-300 rounded-lg dark:border-gray-600">
-      <h3 className="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-200">Generated Chapter Outline</h3>
+      <h3 className="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-200">生成的章节大纲</h3>
       {isLoading && (
         <div className="text-center py-4">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="text-blue-600 dark:text-blue-400 mt-2">Generating outline, please wait...</p>
+            <p className="text-blue-600 dark:text-blue-400 mt-2">正在生成大纲，请稍候...</p>
         </div>
       )}
-      {error && <p className="text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900 p-3 rounded-md">Error: {error}</p>}
+      {error && <p className="text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900 p-3 rounded-md">错误: {error}</p>}
 
       {!isLoading && !error && chapters.length > 0 && (
         <>
@@ -84,11 +84,11 @@ const ChapterOutline: React.FC<ChapterOutlineProps> = ({
               </li>
             ))}
           </ul>
-          <p className="mt-4 text-sm text-green-600 dark:text-green-400">Outline generated successfully. You can now proceed to the editor.</p>
+          <p className="mt-4 text-sm text-green-600 dark:text-green-400">大纲已成功生成。您现在可以继续编辑。</p>
         </>
       )}
       {!isLoading && !error && chapters.length === 0 && transcribedText && (
-        <p className="text-gray-500 dark:text-gray-400">No chapters were generated based on the provided text, or the generation is pending.</p>
+        <p className="text-gray-500 dark:text-gray-400">基于提供的文本未生成任何章节，或者生成仍在待处理中。</p>
       )}
     </div>
   );

@@ -10,12 +10,12 @@ interface MemoirCardProps {
 
 const MemoirCard: React.FC<MemoirCardProps> = ({ memoir, onLikeToggle, isLiked }) => {
   const truncateText = (text: string | undefined, maxLength: number): string => {
-    if (!text) return "No snippet available.";
+    if (!text) return "无内容摘要";
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength).trimEnd() + "...";
   };
 
-  const authorName = memoir.author?.nickname || memoir.author?.name || 'Unknown Author';
+  const authorName = memoir.author?.nickname || memoir.author?.name || '未知作者';
   const authorIdForLink = memoir.author?.id || '#'; // Fallback link if author ID is missing
 
   return (
@@ -27,7 +27,7 @@ const MemoirCard: React.FC<MemoirCardProps> = ({ memoir, onLikeToggle, isLiked }
           </Link>
         </h3>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-          By <Link to={`/users/${authorIdForLink}`} className="text-indigo-500 dark:text-indigo-400 hover:underline">{authorName}</Link>
+          作者: <Link to={`/users/${authorIdForLink}`} className="text-indigo-500 dark:text-indigo-400 hover:underline">{authorName}</Link>
         </p>
         <p className="text-gray-700 dark:text-gray-300 text-base mb-4 flex-grow">
           {truncateText(memoir.snippet, 150)}
@@ -38,7 +38,7 @@ const MemoirCard: React.FC<MemoirCardProps> = ({ memoir, onLikeToggle, isLiked }
             type="button"
             onClick={() => onLikeToggle(memoir.id)}
             aria-pressed={isLiked}
-            aria-label={isLiked ? "Unlike this memoir" : "Like this memoir"}
+            aria-label={isLiked ? "取消点赞此回忆录" : "点赞此回忆录"}
             className={`px-3 py-1.5 rounded-md text-sm font-semibold flex items-center space-x-1.5 transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800
                         ${isLiked
                             ? 'bg-red-500 text-white hover:bg-red-600 focus:ring-red-500'
@@ -51,7 +51,7 @@ const MemoirCard: React.FC<MemoirCardProps> = ({ memoir, onLikeToggle, isLiked }
             to={`/community/memoirs/${memoir.id}`}
             className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium text-sm"
           >
-            Read More &rarr;
+            查看更多 &rarr;
           </Link>
         </div>
       </div>

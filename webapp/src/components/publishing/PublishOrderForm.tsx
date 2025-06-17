@@ -30,11 +30,11 @@ const PublishOrderForm: React.FC<PublishOrderFormProps> = ({ onSubmit, isSubmitt
     setFormError(null);
 
     if (quantity < 1 && format !== 'ebook') {
-      setFormError('Quantity must be at least 1 for physical copies.');
+      setFormError('实体书的数量必须至少为1本。');
       return;
     }
     if ((format === 'paperback' || format === 'hardcover') && !shippingAddress.trim()) {
-      setFormError('Shipping address is required for physical copies.');
+      setFormError('实体书需要提供收货地址。');
       return;
     }
 
@@ -49,7 +49,7 @@ const PublishOrderForm: React.FC<PublishOrderFormProps> = ({ onSubmit, isSubmitt
       await onSubmit(formData);
       // Form reset can be handled by parent page on success if it unmounts/hides this form
     } catch (error) {
-      setFormError(error instanceof Error ? error.message : "Order submission failed. Please try again.");
+      setFormError(error instanceof Error ? error.message : "订单提交失败，请重试。");
     }
   };
 
@@ -57,11 +57,11 @@ const PublishOrderForm: React.FC<PublishOrderFormProps> = ({ onSubmit, isSubmitt
     <form onSubmit={handleSubmit} className="space-y-6">
       {formError && <p className="text-red-500 text-sm p-3 bg-red-100 rounded-md">{formError}</p>}
 
-      <p className="text-sm text-gray-600">You are creating a publish order for: <strong>{memoirTitle}</strong></p>
+      <p className="text-sm text-gray-600">您正在为回忆录创建出版订单: <strong>{memoirTitle}</strong></p>
 
       <div>
         <label htmlFor="publishFormat" className="block text-sm font-medium text-gray-700">
-          Publishing Format
+          出版格式
         </label>
         <select
           id="publishFormat"
@@ -70,9 +70,9 @@ const PublishOrderForm: React.FC<PublishOrderFormProps> = ({ onSubmit, isSubmitt
           className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           disabled={isSubmitting}
         >
-          <option value="ebook">E-book</option>
-          <option value="paperback">Paperback</option>
-          <option value="hardcover">Hardcover</option>
+          <option value="ebook">电子书</option>
+          <option value="paperback">平装本</option>
+          <option value="hardcover">精装本</option>
         </select>
       </div>
 
@@ -80,7 +80,7 @@ const PublishOrderForm: React.FC<PublishOrderFormProps> = ({ onSubmit, isSubmitt
         <>
           <div>
             <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">
-              Quantity
+              数量
             </label>
             <input
               type="number"
@@ -95,7 +95,7 @@ const PublishOrderForm: React.FC<PublishOrderFormProps> = ({ onSubmit, isSubmitt
 
           <div>
             <label htmlFor="shippingAddress" className="block text-sm font-medium text-gray-700">
-              Shipping Address
+              收货地址
             </label>
             <textarea
               id="shippingAddress"
@@ -103,7 +103,7 @@ const PublishOrderForm: React.FC<PublishOrderFormProps> = ({ onSubmit, isSubmitt
               onChange={(e) => setShippingAddress(e.target.value)}
               rows={3}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="Full shipping address for physical copies"
+              placeholder="请输入物理副本的完整收货地址"
               disabled={isSubmitting}
             />
           </div>
@@ -112,7 +112,7 @@ const PublishOrderForm: React.FC<PublishOrderFormProps> = ({ onSubmit, isSubmitt
 
       <div>
         <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
-          Additional Notes (Optional)
+          附加说明（可选）
         </label>
         <textarea
           id="notes"
@@ -120,7 +120,7 @@ const PublishOrderForm: React.FC<PublishOrderFormProps> = ({ onSubmit, isSubmitt
           onChange={(e) => setNotes(e.target.value)}
           rows={3}
           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          placeholder="Any special instructions or notes for your order."
+          placeholder="订单的特殊要求或说明"
           disabled={isSubmitting}
         />
       </div>
@@ -131,7 +131,7 @@ const PublishOrderForm: React.FC<PublishOrderFormProps> = ({ onSubmit, isSubmitt
           disabled={isSubmitting}
           className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400"
         >
-          {isSubmitting ? 'Submitting Order...' : 'Submit Publish Order'}
+          {isSubmitting ? '提交订单中...' : '提交出版订单'}
         </button>
       </div>
     </form>

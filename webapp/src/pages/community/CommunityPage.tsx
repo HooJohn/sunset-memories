@@ -102,13 +102,13 @@ const CommunityPage: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-4xl font-bold mb-10 text-center text-gray-800 dark:text-gray-200">Community Memoirs</h1>
+      <h1 className="text-4xl font-bold mb-10 text-center text-gray-800 dark:text-gray-200">社区回忆录</h1>
 
       <div className="mb-8 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
-        <p className="text-center text-gray-600 dark:text-gray-400">Explore stories shared by our community. (Filtering/sorting coming soon!)</p>
+        <p className="text-center text-gray-600 dark:text-gray-400">浏览社区成员分享的故事（筛选/排序功能即将推出）</p>
       </div>
 
-      {isLoading && <div className="text-center py-10"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div><p className="dark:text-gray-300 mt-4">Loading memoirs...</p></div>}
+      {isLoading && <div className="text-center py-10"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div><p className="dark:text-gray-300 mt-4">加载回忆录中...</p></div>}
       {error && <p className="text-center text-red-500 dark:text-red-400 bg-red-100 dark:bg-red-900 p-4 rounded-md text-xl shadow">{error}</p>}
 
       {!isLoading && !error && memoirs.length === 0 && (
@@ -116,7 +116,7 @@ const CommunityPage: React.FC = () => {
             <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-16 w-16 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
             </svg>
-            <p className="mt-4 text-xl text-gray-600 dark:text-gray-400">No public memoirs found. Be the first to share!</p>
+            <p className="mt-4 text-xl text-gray-600 dark:text-gray-400">暂无公开回忆录，快来成为第一个分享的人吧！</p>
         </div>
       )}
 
@@ -140,7 +140,7 @@ const CommunityPage: React.FC = () => {
                 disabled={currentPage === 1}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
               >
-                Previous
+                上一页
               </button>
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNumber => (
                 <button
@@ -159,12 +159,12 @@ const CommunityPage: React.FC = () => {
                 disabled={currentPage === totalPages}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
               >
-                Next
+                下一页
               </button>
             </div>
           )}
           <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
-            Showing {memoirs.length} of {totalMemoirs} memoirs. Page {currentPage} of {totalPages}.
+            显示 {memoirs.length} 条，共 {totalMemoirs} 条回忆录。当前为第 {currentPage} 页，共 {totalPages} 页。
           </p>
         </>
       )}

@@ -1,18 +1,18 @@
 import axios, { AxiosError } from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    // 'Content-Type': 'application/json', // Default, but can be overridden for FormData
+    'Content-Type': 'application/json',
   },
 });
 
 // --- Request Types ---
 interface LoginPayload {
   phone: string;
-  verificationCode: string;
+  password: string;
 }
 
 interface RegisterPayload {
@@ -43,7 +43,7 @@ interface ApiErrorResponse {
   error?: string;
 }
 
-const getErrorMessage = (error: any): string => {
+export const getErrorMessage = (error: any): string => {
   if (axios.isAxiosError(error)) {
     const axiosError = error as AxiosError<ApiErrorResponse>;
     if (axiosError.response && axiosError.response.data) {
@@ -54,7 +54,7 @@ const getErrorMessage = (error: any): string => {
       return axiosError.message;
     }
   }
-  return error.message || 'An unexpected error occurred.';
+  return error.message || '发生未知错误';
 };
 
 // --- Auth API ---
@@ -76,7 +76,7 @@ export const register = async (userData: RegisterPayload): Promise<AuthResponse>
 export const fetchUserProfile = async (): Promise<User> => {
   try {
     const token = localStorage.getItem('authToken');
-    if (!token) throw new Error('Authentication token not found. Please login.');
+    if (!token) throw new Error('未找到认证令牌，请先登录');
     const response = await apiClient.get<User>('/users/me');
     return response.data;
   } catch (error) { throw new Error(getErrorMessage(error)); }
@@ -85,7 +85,7 @@ export const fetchUserProfile = async (): Promise<User> => {
 export const updateUserProfile = async (data: { name?: string; avatar_url?: string; nickname?: string }): Promise<User> => {
   try {
     const token = localStorage.getItem('authToken');
-    if (!token) throw new Error('Authentication token not found. Please login.');
+    if (!token) throw new Error('未找到认证令牌，请先登录');
     const payload: { name?: string; avatar_url?: string; nickname?: string } = {};
     if (data.name !== undefined) payload.name = data.name;
     if (data.avatar_url !== undefined) payload.avatar_url = data.avatar_url;
@@ -136,19 +136,19 @@ export const transcribeAudio = async (file: File): Promise<{ transcription: stri
     formData.append('file', file);
     const response = await apiClient.post<{ transcription: string }>('/memoirs/transcribe', formData);
     return response.data;
-  } catch (error) { throw new Error(`Failed to transcribe audio: ${getErrorMessage(error)}`); }
+  } catch (error) { throw new Error(`语音转文字失败: ${getErrorMessage(error)}`); }
 };
 export const generateChapters = async (transcribedText: string): Promise<{ chapters: Chapter[] }> => {
   try {
     const response = await apiClient.post<{ chapters: Chapter[] }>('/memoirs/generate-chapters', { transcribedText }, { headers: {'Content-Type': 'application/json'} });
     return response.data;
-  } catch (error) { throw new Error(`Failed to generate chapters: ${getErrorMessage(error)}`); }
+  } catch (error) { throw new Error(`章节生成失败: ${getErrorMessage(error)}`); }
 };
 export const createMemoir = async (data: CreateMemoirPayload): Promise<Memoir> => {
   try {
     const response = await apiClient.post<Memoir>('/memoirs', data, { headers: {'Content-Type': 'application/json'} });
     return response.data;
-  } catch (error) { throw new Error(`Failed to create memoir: ${getErrorMessage(error)}`); }
+  } catch (error) { throw new Error(`创建回忆录失败: ${getErrorMessage(error)}`); }
 };
 export const getMemoirs = async (): Promise<Memoir[]> => {
     try {
@@ -166,7 +166,7 @@ export const updateMemoir = async (memoirId: string, data: UpdateMemoirPayload):
   try {
     const response = await apiClient.patch<Memoir>(`/memoirs/${memoirId}`, data, { headers: {'Content-Type': 'application/json'} });
     return response.data;
-  } catch (error) { throw new Error(`Failed to update memoir: ${getErrorMessage(error)}`); }
+  } catch (error) { throw new Error(`更新回忆录失败: ${getErrorMessage(error)}`); }
 };
 export const deleteMemoir = async (memoirId: string): Promise<void> => {
     try {
@@ -222,7 +222,7 @@ export const inviteCollaborator = async (memoirId: string, data: InviteCollabora
   try {
     const response = await apiClient.post<MemoirCollaboration>(`/memoirs/${memoirId}/collaborators`, data, { headers: {'Content-Type': 'application/json'} });
     return response.data;
-  } catch (error) { throw new Error(`Failed to invite collaborator: ${getErrorMessage(error)}`); }
+  } catch (error) { throw new Error(`邀请协作者失败: ${getErrorMessage(error)}`); }
 };
 export const getPendingInvitations = async (): Promise<MemoirCollaboration[]> => {
     try {
@@ -286,7 +286,7 @@ export const submitServiceRequest = async (data: CreateServiceRequestPayload): P
     const payload = { ...data, details: data.description, };
     const response = await apiClient.post<ServiceRequest>('/service-requests', payload, { headers: {'Content-Type': 'application/json'} });
     return response.data;
-  } catch (error) { throw new Error(`Failed to submit service request: ${getErrorMessage(error)}`); }
+  } catch (error) { throw new Error(`提交服务请求失败: ${getErrorMessage(error)}`); }
 };
 export const getUserServiceRequests = async (): Promise<ServiceRequest[]> => {
   try {
@@ -311,7 +311,7 @@ export const submitPublishOrder = async (data: PublishOrderData): Promise<Publis
   try {
     const response = await apiClient.post<PublishOrder>('/publish-orders', data, { headers: {'Content-Type': 'application/json'} });
     return response.data;
-  } catch (error) { throw new Error(`Failed to submit publish order: ${getErrorMessage(error)}`); }
+  } catch (error) { throw new Error(`提交出版订单失败: ${getErrorMessage(error)}`); }
 };
 export const getUserPublishOrders = async (): Promise<PublishOrder[]> => {
   try {
@@ -355,14 +355,14 @@ export const getPublicMemoirs = async (page: number = 1, limit: number = 10): Pr
   try {
     const response = await apiClient.get<{ data: PublicMemoirSummary[]; total: number; page: number; limit: number; }>('/memoirs/public', { params: { page, limit } });
     return response.data;
-  } catch (error) { throw new Error(`Failed to get public memoirs: ${getErrorMessage(error)}`); }
+  } catch (error) { throw new Error(`获取公共回忆录失败: ${getErrorMessage(error)}`); }
 };
 
 export const getPublicMemoirDetails = async (memoirId: string): Promise<PublicMemoirDetail> => {
   try {
     const response = await apiClient.get<PublicMemoirDetail>(`/memoirs/public/${memoirId}`);
     return response.data;
-  } catch (error) { throw new Error(`Failed to get public memoir details: ${getErrorMessage(error)}`); }
+  } catch (error) { throw new Error(`获取回忆录详情失败: ${getErrorMessage(error)}`); }
 };
 
 export const getCommentsForMemoir = async (memoirId: string): Promise<MemoirComment[]> => {
@@ -370,7 +370,7 @@ export const getCommentsForMemoir = async (memoirId: string): Promise<MemoirComm
     // TODO: Backend endpoint GET /memoirs/:memoirId/comments needs implementation.
     const response = await apiClient.get<MemoirComment[]>(`/memoirs/${memoirId}/comments`);
     return response.data;
-  } catch (error) { throw new Error(`Failed to get comments for memoir: ${getErrorMessage(error)}`); }
+  } catch (error) { throw new Error(`获取评论失败: ${getErrorMessage(error)}`); }
 };
 
 export const likeMemoir = async (memoirId: string): Promise<LikeResponse> => {
@@ -378,7 +378,7 @@ export const likeMemoir = async (memoirId: string): Promise<LikeResponse> => {
     // TODO: Backend endpoint POST /memoirs/:memoirId/like needs implementation.
     const response = await apiClient.post<LikeResponse>(`/memoirs/${memoirId}/like`, {}, { headers: {'Content-Type': 'application/json'} });
     return response.data;
-  } catch (error) { throw new Error(`Failed to like memoir: ${getErrorMessage(error)}`); }
+  } catch (error) { throw new Error(`点赞失败: ${getErrorMessage(error)}`); }
 };
 
 export const unlikeMemoir = async (memoirId: string): Promise<LikeResponse> => {
@@ -386,7 +386,7 @@ export const unlikeMemoir = async (memoirId: string): Promise<LikeResponse> => {
     // TODO: Backend endpoint DELETE /memoirs/:memoirId/like needs implementation.
     const response = await apiClient.delete<LikeResponse>(`/memoirs/${memoirId}/like`);
     return response.data;
-  } catch (error) { throw new Error(`Failed to unlike memoir: ${getErrorMessage(error)}`); }
+  } catch (error) { throw new Error(`取消点赞失败: ${getErrorMessage(error)}`); }
 };
 
 export const addCommentToMemoir = async (memoirId: string, data: AddCommentPayload): Promise<MemoirComment> => {
@@ -394,7 +394,7 @@ export const addCommentToMemoir = async (memoirId: string, data: AddCommentPaylo
     // TODO: Backend endpoint POST /memoirs/:memoirId/comments needs implementation.
     const response = await apiClient.post<MemoirComment>(`/memoirs/${memoirId}/comments`, data, { headers: {'Content-Type': 'application/json'} });
     return response.data;
-  } catch (error) { throw new Error(`Failed to add comment: ${getErrorMessage(error)}`); }
+  } catch (error) { throw new Error(`添加评论失败: ${getErrorMessage(error)}`); }
 };
 
 

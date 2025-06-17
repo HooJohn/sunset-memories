@@ -33,7 +33,7 @@ const ViewMemoirPage: React.FC = () => {
 
   const fetchMemoirAndComments = useCallback(async () => {
     if (!memoirId) {
-        setError("Memoir ID is missing.");
+        setError("错误：回忆录ID缺失");
         setIsLoading(false);
         setIsLoadingComments(false);
         return;
@@ -50,7 +50,7 @@ const ViewMemoirPage: React.FC = () => {
 
     } catch (err) {
       console.error('Failed to fetch memoir details or comments:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load memoir data.');
+      setError(err instanceof Error ? `错误：${err.message}` : '错误：加载回忆录数据失败');
     } finally {
       setIsLoading(false);
       setIsLoadingComments(false);
@@ -63,7 +63,7 @@ const ViewMemoirPage: React.FC = () => {
 
   const handleAddComment = async (text: string) => {
     if (!memoirId) {
-      setCommentError("Memoir ID is missing.");
+      setCommentError("错误：回忆录ID缺失");
       return;
     }
     setCommentError(null);
@@ -73,7 +73,7 @@ const ViewMemoirPage: React.FC = () => {
       setComments(prevComments => [newComment, ...prevComments]);
     } catch (err) {
       console.error('Failed to add comment:', err);
-      const errMsg = err instanceof Error ? err.message : 'Failed to post comment.';
+      const errMsg = err instanceof Error ? `错误：${err.message}` : '错误：提交评论失败';
       setCommentError(errMsg);
       throw new Error(errMsg);
     }
@@ -106,7 +106,7 @@ const ViewMemoirPage: React.FC = () => {
       }) : null);
     } catch (err) {
       console.error('Failed to toggle like:', err);
-      setLikeError(err instanceof Error ? err.message : "Failed to update like status.");
+      setLikeError(err instanceof Error ? `错误：${err.message}` : "错误：更新点赞状态失败");
       // Revert optimistic update
       setMemoirDetail(prev => prev ? ({
           ...prev,
@@ -117,13 +117,13 @@ const ViewMemoirPage: React.FC = () => {
   };
 
   if (isLoading) {
-    return <div className="text-center p-10"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div><p className="dark:text-gray-300 mt-4">Loading memoir...</p></div>;
+    return <div className="text-center p-10"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div><p className="dark:text-gray-300 mt-4">加载回忆录中...</p></div>;
   }
   if (error) {
     return <p className="text-center text-red-500 dark:text-red-400 bg-red-100 dark:bg-red-900 p-4 rounded-md shadow">{error}</p>;
   }
   if (!memoirDetail) {
-    return <p className="text-center p-10 dark:text-gray-300">Memoir not found.</p>;
+    return <p className="text-center p-10 dark:text-gray-300">回忆录未找到。</p>;
   }
 
   // Determine content to render (either full content_html or chapters)
@@ -134,7 +134,7 @@ const ViewMemoirPage: React.FC = () => {
     ).join('');
   }
   if (!memoirContentHtml) {
-    memoirContentHtml = '<p>No content available for this memoir.</p>';
+    memoirContentHtml = '<p>此回忆录暂无内容。</p>';
   }
 
 
@@ -144,9 +144,9 @@ const ViewMemoirPage: React.FC = () => {
         <header className="mb-8 border-b pb-6 border-gray-200 dark:border-gray-700">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-800 dark:text-gray-100 mb-3">{memoirDetail.title}</h1>
           <p className="text-lg text-gray-600 dark:text-gray-400">
-            By <Link to={`/users/${memoirDetail.author.id}`} className="text-indigo-600 dark:text-indigo-400 hover:underline">{memoirDetail.author.nickname || memoirDetail.author.name || 'Unknown Author'}</Link>
+            作者：<Link to={`/users/${memoirDetail.author.id}`} className="text-indigo-600 dark:text-indigo-400 hover:underline">{memoirDetail.author.nickname || memoirDetail.author.name || '未知作者'}</Link>
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">Published on: {new Date(memoirDetail.created_at).toLocaleDateString()}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">发布日期：{new Date(memoirDetail.created_at).toLocaleDateString()}</p>
         </header>
 
         <div
@@ -164,7 +164,7 @@ const ViewMemoirPage: React.FC = () => {
                             ? 'bg-red-500 text-white hover:bg-red-600'
                             : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
                 >
-                    <span>{memoirDetail.isLikedByCurrentUser ? '❤️ Liked' : '🤍 Like'}</span>
+                    <span>{memoirDetail.isLikedByCurrentUser ? '❤️ 已赞' : '🤍 点赞'}</span>
                     <span className={`ml-1 px-2 py-0.5 rounded-full text-sm ${memoirDetail.isLikedByCurrentUser ? 'bg-white text-red-500' : 'bg-gray-300 dark:bg-gray-600'}`}>
                         {memoirDetail.likeCount ?? 0}
                     </span>
@@ -175,20 +175,20 @@ const ViewMemoirPage: React.FC = () => {
       </article>
 
       <section className="mt-12">
-        <h2 className="text-3xl font-semibold mb-6 text-gray-800 dark:text-gray-100">Comments ({comments.length})</h2>
+        <h2 className="text-3xl font-semibold mb-6 text-gray-800 dark:text-gray-100">评论 ({comments.length})</h2>
         <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg p-6 md:p-8">
-          <h3 className="text-2xl font-semibold mb-4 text-indigo-700 dark:text-indigo-400">Leave a Comment</h3>
+          <h3 className="text-2xl font-semibold mb-4 text-indigo-700 dark:text-indigo-400">发表评论</h3>
           <MemoirCommentForm onSubmit={handleAddComment} />
           {commentError && <p className="text-red-500 dark:text-red-400 mt-2 text-sm">{commentError}</p>}
         </div>
 
         <div className="mt-8 space-y-6">
           {isLoadingComments ? (
-            <p className="dark:text-gray-300 text-center">Loading comments...</p>
+            <p className="dark:text-gray-300 text-center">加载评论中...</p>
           ) : comments.length > 0 ? (
             comments.map(comment => <MemoirComment key={comment.id} comment={comment} />)
           ) : (
-            <p className="text-gray-600 dark:text-gray-400 text-center py-4">No comments yet. Be the first to comment!</p>
+            <p className="text-gray-600 dark:text-gray-400 text-center py-4">暂无评论，快来成为第一个评论的人吧！</p>
           )}
         </div>
       </section>
