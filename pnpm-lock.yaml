@@ -45,8 +45,8 @@ importers:
         specifier: ^10.0.0
         version: 10.0.2(@nestjs/common@10.4.19(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.1.14)(rxjs@7.8.2))(@nestjs/core@10.4.19)(reflect-metadata@0.1.14)(rxjs@7.8.2)(typeorm@0.3.24(ioredis@5.6.1)(pg@8.16.0)(reflect-metadata@0.1.14)(sqlite3@5.1.7)(ts-node@10.9.2(@types/node@20.19.0)(typescript@5.8.3)))
       bcrypt:
-        specifier: 5.1.1
-        version: 5.1.1(encoding@0.1.13)
+        specifier: ^6.0.0
+        version: 6.0.0
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -72,7 +72,7 @@ importers:
         specifier: ^7.8.1
         version: 7.8.2
       sqlite3:
-        specifier: ^5.1.6
+        specifier: ^5.1.7
         version: 5.1.7
       typeorm:
         specifier: ^0.3.17
@@ -781,10 +781,6 @@ packages:
   '@lukeed/csprng@1.1.0':
     resolution: {integrity: sha512-Z7C/xXCiGWsg0KuKsHTKJxbWhpI3Vs5GwLfOean7MGyVFGqdRgBbAjOCh6u4bbjPc/8MJ2pZmK/0DLdCbivLDA==}
     engines: {node: '>=8'}
-
-  '@mapbox/node-pre-gyp@1.0.11':
-    resolution: {integrity: sha512-Yhlar6v9WQgUp/He7BdgzOz8lqMQ8sU+jkCq7Wx8Myc5YFJLbEe7lgui/V7G1qB1DJykHSGwreceSaD60Y0PUQ==}
-    hasBin: true
 
   '@nestjs/cli@10.4.9':
     resolution: {integrity: sha512-s8qYd97bggqeK7Op3iD49X2MpFtW4LVNLAwXFkfbRxKME6IYT7X0muNTJ2+QfI8hpbNx9isWkrLWIp+g5FOhiA==}
@@ -1751,11 +1747,6 @@ packages:
   aproba@2.0.0:
     resolution: {integrity: sha512-lYe4Gx7QT+MKGbDsA+Z+he/Wtef0BiwDOlK/XkBrdfsh9J/jPPXbX0tE9x9cl27Tmu5gg3QUbUrQYa/y+KOHPQ==}
 
-  are-we-there-yet@2.0.0:
-    resolution: {integrity: sha512-Ci/qENmwHnsYo9xKIcUJN5LeDKdJ6R1Z1j9V/J5wyq8nh/mYPEpIKJbBZXtZjG04HiK7zV/p6Vs9952MrMeUIw==}
-    engines: {node: '>=10'}
-    deprecated: This package is no longer supported.
-
   are-we-there-yet@3.0.1:
     resolution: {integrity: sha512-QZW4EDmGwlYur0Yyf/b2uGucHQMa8aFUP7eu9ddR73vvhFyt4V0Vl3QHPcTNJ8l6qYOBdxgXdnBXQrHilfRQBg==}
     engines: {node: ^12.13.0 || ^14.15.0 || >=16.0.0}
@@ -1846,9 +1837,9 @@ packages:
   base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
 
-  bcrypt@5.1.1:
-    resolution: {integrity: sha512-AGBHOG5hPYZ5Xl9KXzU5iKq9516yEmvCKDg3ecP5kX2aB6UqTeXZxk2ELnDgDm6BQSMlLt9rDB4LoSMx0rYwww==}
-    engines: {node: '>= 10.0.0'}
+  bcrypt@6.0.0:
+    resolution: {integrity: sha512-cU8v/EGSrnH+HnxV2z0J7/blxH8gq7Xh2JFT6Aroax7UohdmiJJlxApMxtKfuI7z68NvvVcmR78k2LbT6efhRg==}
+    engines: {node: '>= 18'}
 
   binary-extensions@2.3.0:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
@@ -2690,11 +2681,6 @@ packages:
   functions-have-names@1.2.3:
     resolution: {integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==}
 
-  gauge@3.0.2:
-    resolution: {integrity: sha512-+5J6MS/5XksCuXq++uFRsnUd7Ovu1XenbeuIuNRJxYWjgQbPuFhT14lAvsWfqfAmnwluf1OwMjz39HjfLPci0Q==}
-    engines: {node: '>=10'}
-    deprecated: This package is no longer supported.
-
   gauge@4.0.4:
     resolution: {integrity: sha512-f9m+BEN5jkg6a0fZjleidjN51VE1X+mPFQ2DJ0uv1V39oCLCbsGe6yjbBnp7eK7z/+GAon99a3nHuqbuuthyPg==}
     engines: {node: ^12.13.0 || ^14.15.0 || >=16.0.0}
@@ -3474,10 +3460,6 @@ packages:
     resolution: {integrity: sha512-ISQTe55T2ao7XtlAStud6qwYPZjE4GK1S/BeVPus4jrq6JuOnQ00YKQC581RWhR122W7msZV263KzVeLoqidyQ==}
     engines: {node: '>=12'}
 
-  make-dir@3.1.0:
-    resolution: {integrity: sha512-g3FeP20LNwhALb/6Cz6Dd4F2ngze0jz7tbzrD2wAV+o9FeNHe4rL+yK2md0J/fiSf1sa1ADhXqi5+oVwOM/eGw==}
-    engines: {node: '>=8'}
-
   make-dir@4.0.0:
     resolution: {integrity: sha512-hXdUTZYIVOt1Ex//jAQi+wTZZpUpwBj/0QsOzqegb3rGMMeJiSEu5xLHnYfBrRV4RH2+OCSOO95Is/7x1WJ4bw==}
     engines: {node: '>=10'}
@@ -3699,11 +3681,12 @@ packages:
   node-abort-controller@3.1.1:
     resolution: {integrity: sha512-AGK2yQKIjRuqnc6VkX2Xj5d+QW8xZ87pa1UK6yA6ouUyuxfHuMP6umE5QK7UmTeOAymo+Zx1Fxiuw9rVx8taHQ==}
 
-  node-addon-api@5.1.0:
-    resolution: {integrity: sha512-eh0GgfEkpnoWDq+VY8OyvYhFEzBk6jIYbRKdIlyTiAXIVJ8PyBaKb0rp7oDtoddbdoHWhq8wwr+XZ81F1rpNdA==}
-
   node-addon-api@7.1.1:
     resolution: {integrity: sha512-5m3bsyrjFWE1xf7nz7YXdN4udnVtXK6/Yfgn5qnahL6bCkf2yKt4k3nuTKAtT4r3IG8JNR2ncsIMdZuAzJjHQQ==}
+
+  node-addon-api@8.3.1:
+    resolution: {integrity: sha512-lytcDEdxKjGJPTLEfW4mYMigRezMlyJY8W4wxJK8zE533Jlb8L8dRuObJFWg2P+AuOIxoCgKF+2Oq4d4Zd0OUA==}
+    engines: {node: ^18 || ^20 || >= 21}
 
   node-emoji@1.11.0:
     resolution: {integrity: sha512-wo2DpQkQp7Sjm2A0cq+sN7EHKO6Sl0ctXeBdFZrL9T9+UywORbufTcTZxom8YqpLQt/FqNMUkOpkZrJVYSKD3A==}
@@ -3716,6 +3699,10 @@ packages:
     peerDependenciesMeta:
       encoding:
         optional: true
+
+  node-gyp-build@4.8.4:
+    resolution: {integrity: sha512-LA4ZjwlnUblHVgq0oBF3Jl/6h/Nvs5fzBLwdEF4nuxnFdsfajde4WfxtJr3CaiH+F6ewcIB/q4jQ4UzPyid+CQ==}
+    hasBin: true
 
   node-gyp@11.2.0:
     resolution: {integrity: sha512-T0S1zqskVUSxcsSTkAsLc7xCycrRYmtDHadDinzocrThjyQCn5kMlEBSj6H4qDbgsIOSLmmlRIeb0lZXj+UArA==}
@@ -3762,10 +3749,6 @@ packages:
   npm-run-path@4.0.1:
     resolution: {integrity: sha512-S48WzZW777zhNIrn7gxOlISNAqi9ZC/uQFnRdbeIHhZhCA6UqpkOT8T1G7BvfdgP4Er8gF4sUbaS0i7QvIfCWw==}
     engines: {node: '>=8'}
-
-  npmlog@5.0.1:
-    resolution: {integrity: sha512-AqZtDUWOMKs1G/8lwylVjrdYgqA4d9nu8hc+0gzRxlDb1I10+FHBGMXs6aiQHFdCUUlqH99MUMuLfzWDNDtfxw==}
-    deprecated: This package is no longer supported.
 
   npmlog@6.0.2:
     resolution: {integrity: sha512-/vBvz5Jfr9dT/aFWd0FIRf+T/Q2WBsLENygUaFUqstqsycmZAP/t5BvFJTK0viFmSUxiUKTUplWy5vt+rvKIxg==}
@@ -5797,21 +5780,6 @@ snapshots:
 
   '@lukeed/csprng@1.1.0': {}
 
-  '@mapbox/node-pre-gyp@1.0.11(encoding@0.1.13)':
-    dependencies:
-      detect-libc: 2.0.4
-      https-proxy-agent: 5.0.1
-      make-dir: 3.1.0
-      node-fetch: 2.7.0(encoding@0.1.13)
-      nopt: 5.0.0
-      npmlog: 5.0.1
-      rimraf: 3.0.2
-      semver: 7.7.2
-      tar: 6.2.1
-    transitivePeerDependencies:
-      - encoding
-      - supports-color
-
   '@nestjs/cli@10.4.9':
     dependencies:
       '@angular-devkit/core': 17.3.11(chokidar@3.6.0)
@@ -6779,7 +6747,8 @@ snapshots:
 
   '@xtuc/long@4.2.2': {}
 
-  abbrev@1.1.1: {}
+  abbrev@1.1.1:
+    optional: true
 
   abbrev@3.0.1: {}
 
@@ -6803,6 +6772,7 @@ snapshots:
       debug: 4.4.1
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   agent-base@7.1.3: {}
 
@@ -6888,12 +6858,8 @@ snapshots:
 
   append-field@1.0.0: {}
 
-  aproba@2.0.0: {}
-
-  are-we-there-yet@2.0.0:
-    dependencies:
-      delegates: 1.0.0
-      readable-stream: 3.6.2
+  aproba@2.0.0:
+    optional: true
 
   are-we-there-yet@3.0.1:
     dependencies:
@@ -7019,13 +6985,10 @@ snapshots:
 
   base64-js@1.5.1: {}
 
-  bcrypt@5.1.1(encoding@0.1.13):
+  bcrypt@6.0.0:
     dependencies:
-      '@mapbox/node-pre-gyp': 1.0.11(encoding@0.1.13)
-      node-addon-api: 5.1.0
-    transitivePeerDependencies:
-      - encoding
-      - supports-color
+      node-addon-api: 8.3.1
+      node-gyp-build: 4.8.4
 
   binary-extensions@2.3.0: {}
 
@@ -7262,7 +7225,8 @@ snapshots:
 
   color-name@1.1.4: {}
 
-  color-support@1.1.3: {}
+  color-support@1.1.3:
+    optional: true
 
   combined-stream@1.0.8:
     dependencies:
@@ -7293,7 +7257,8 @@ snapshots:
 
   consola@2.15.3: {}
 
-  console-control-strings@1.1.0: {}
+  console-control-strings@1.1.0:
+    optional: true
 
   content-disposition@0.5.4:
     dependencies:
@@ -7422,7 +7387,8 @@ snapshots:
 
   delayed-stream@1.0.0: {}
 
-  delegates@1.0.0: {}
+  delegates@1.0.0:
+    optional: true
 
   denque@2.1.0: {}
 
@@ -8040,18 +8006,6 @@ snapshots:
 
   functions-have-names@1.2.3: {}
 
-  gauge@3.0.2:
-    dependencies:
-      aproba: 2.0.0
-      color-support: 1.1.3
-      console-control-strings: 1.1.0
-      has-unicode: 2.0.1
-      object-assign: 4.1.1
-      signal-exit: 3.0.7
-      string-width: 4.2.3
-      strip-ansi: 6.0.1
-      wide-align: 1.1.5
-
   gauge@4.0.4:
     dependencies:
       aproba: 2.0.0
@@ -8178,7 +8132,8 @@ snapshots:
     dependencies:
       has-symbols: 1.1.0
 
-  has-unicode@2.0.1: {}
+  has-unicode@2.0.1:
+    optional: true
 
   hasown@2.0.2:
     dependencies:
@@ -8220,6 +8175,7 @@ snapshots:
       debug: 4.4.1
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   https-proxy-agent@7.0.6:
     dependencies:
@@ -9041,10 +8997,6 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  make-dir@3.1.0:
-    dependencies:
-      semver: 6.3.1
-
   make-dir@4.0.0:
     dependencies:
       semver: 7.7.2
@@ -9266,9 +9218,9 @@ snapshots:
 
   node-abort-controller@3.1.1: {}
 
-  node-addon-api@5.1.0: {}
-
   node-addon-api@7.1.1: {}
+
+  node-addon-api@8.3.1: {}
 
   node-emoji@1.11.0:
     dependencies:
@@ -9279,6 +9231,8 @@ snapshots:
       whatwg-url: 5.0.0
     optionalDependencies:
       encoding: 0.1.13
+
+  node-gyp-build@4.8.4: {}
 
   node-gyp@11.2.0:
     dependencies:
@@ -9319,6 +9273,7 @@ snapshots:
   nopt@5.0.0:
     dependencies:
       abbrev: 1.1.1
+    optional: true
 
   nopt@8.1.0:
     dependencies:
@@ -9350,13 +9305,6 @@ snapshots:
   npm-run-path@4.0.1:
     dependencies:
       path-key: 3.1.1
-
-  npmlog@5.0.1:
-    dependencies:
-      are-we-there-yet: 2.0.0
-      console-control-strings: 1.1.0
-      gauge: 3.0.2
-      set-blocking: 2.0.0
 
   npmlog@6.0.2:
     dependencies:
@@ -10012,7 +9960,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  set-blocking@2.0.0: {}
+  set-blocking@2.0.0:
+    optional: true
 
   set-cookie-parser@2.7.1: {}
 
@@ -10781,6 +10730,7 @@ snapshots:
   wide-align@1.1.5:
     dependencies:
       string-width: 4.2.3
+    optional: true
 
   word-wrap@1.2.5: {}
 
