@@ -13,8 +13,10 @@ import { CollaborationsModule } from './collaborations/collaborations.module'; /
 import { User } from './users/entities/user.entity';
 import { Memoir } from './memoirs/entities/memoir.entity';
 import { Chapter } from './memoirs/entities/chapter.entity';
+import { Comment } from './memoirs/entities/comment.entity';
+import { Like } from './memoirs/entities/like.entity';
 import { MemoirCollaboration } from './memoirs/entities/memoir-collaboration.entity';
-import { ServiceRequest } from './service-requests/entities/service-request.entity'; // Added import
+import { ServiceRequest } from './service-requests/entities/service-request.entity';
 
 @Module({
   imports: [
@@ -24,9 +26,9 @@ import { ServiceRequest } from './service-requests/entities/service-request.enti
       ignoreEnvFile: process.env.NODE_ENV === 'production',
     }),
     TypeOrmModule.forRoot({
-      type: 'sqlite',
-      database: 'db.sqlite',
-      entities: [User, Memoir, Chapter, MemoirCollaboration, ServiceRequest], // Added ServiceRequest
+      type: 'postgres',
+      url: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5433/sunset_memories',
+      entities: [User, Memoir, Chapter, Comment, Like, MemoirCollaboration, ServiceRequest],
       synchronize: true, // Dev only!
       // logging: true,
     }),
