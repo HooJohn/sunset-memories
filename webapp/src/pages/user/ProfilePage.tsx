@@ -1,6 +1,8 @@
-import React, { useEffect, useState, FormEvent } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchUserProfile, updateUserProfile, User } from '../../services/api';
+import { fetchUserProfile, updateUserProfile } from '../../services/api';
+import type { User } from '../../services/api'; // 类型导入
+import type { FormEvent } from 'react'; // 添加 FormEvent 类型导入
 
 const ProfilePage: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);

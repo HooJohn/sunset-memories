@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate, useParams } // Import useParams if memoirId might come from route
+import { useNavigate } // useParams is not used
     from 'react-router-dom';
 import ServiceRequestForm from '../../components/services/ServiceRequestForm';
-import { submitServiceRequest, CreateServiceRequestPayload } from '../../services/api';
+import { submitServiceRequest } from '../../services/api';
+import type { CreateServiceRequestPayload } from '../../services/api';
 
 const ServiceRequestPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);

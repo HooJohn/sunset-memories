@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import UserRequestListItem from '../../components/services/UserRequestListItem';
-import { getUserServiceRequests, ServiceRequest } from '../../services/api'; // Uses updated ServiceRequest
+import { getUserServiceRequests } from '../../services/api';
+import type { ServiceRequest } from '../../services/api'; // 类型导入
 
 const UserRequestsListPage: React.FC = () => {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);

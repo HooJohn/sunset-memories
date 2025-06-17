@@ -1,6 +1,7 @@
 import React from 'react';
 // import { Link } from 'react-router-dom'; // For future detail view
-import { ServiceRequest, ServiceRequestStatus, ServiceType } from '../../services/api';
+import { ServiceRequestStatus, ServiceType } from '../../services/api';
+import type { ServiceRequest } from '../../services/api';
 
 interface UserRequestListItemProps {
   request: ServiceRequest;

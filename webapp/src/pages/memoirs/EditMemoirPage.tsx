@@ -1,8 +1,10 @@
-import React, { useEffect, useState, useRef, FormEvent } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import type { FormEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import RichTextEditor from '../../components/memoirs/RichTextEditor';
 import { Editor } from '@tiptap/react';
-import { getMemoirById, updateMemoir, Memoir, UpdateMemoirPayload, Chapter as ApiChapter } from '../../services/api';
+import { getMemoirById, updateMemoir } from '../../services/api';
+import type { UpdateMemoirPayload, Chapter as ApiChapter } from '../../services/api';
 
 type EditMemoirStatus = 'loading' | 'loaded' | 'editing' | 'saving' | 'saved' | 'error';
 
@@ -131,7 +133,7 @@ const EditMemoirPage: React.FC = () => {
                     onChange={(e) => setMemoirTitle(e.target.value)}
                     placeholder="Enter memoir title"
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                    disabled={status === 'saving' || status === 'loading'}
+                    disabled={status === 'saving'}
                 />
             </div>
 
@@ -156,7 +158,7 @@ const EditMemoirPage: React.FC = () => {
                     checked={isPublic}
                     onChange={(e) => setIsPublic(e.target.checked)}
                     className="h-4 w-4 text-indigo-600 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500"
-                    disabled={status === 'saving' || status === 'loading'}
+                    disabled={status === 'saving'}
                 />
                 <label htmlFor="is_public" className="ml-2 block text-sm text-gray-900 dark:text-gray-300">
                     Make this memoir public?
@@ -180,9 +182,9 @@ const EditMemoirPage: React.FC = () => {
 
         <div className="mt-8 pt-5 border-t border-gray-200 dark:border-gray-700">
           <div className="flex justify-end">
-            <button
-                type="submit"
-                disabled={status === 'saving' || status === 'loading'}
+                <button
+                    type="submit"
+                    disabled={status === 'saving'}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:bg-gray-400 dark:disabled:bg-gray-600"
             >
                 {status === 'saving' ? 'Saving...' : 'Update Memoir'}

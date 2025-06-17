@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { CreateServiceRequestPayload, ServiceType } from '../../services/api';
+import { ServiceType } from '../../services/api';
+import type { CreateServiceRequestPayload } from '../../services/api';
 
 interface ServiceRequestFormProps {
   onSubmit: (formData: CreateServiceRequestPayload) => Promise<void>;

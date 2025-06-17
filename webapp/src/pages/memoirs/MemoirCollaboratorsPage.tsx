@@ -7,29 +7,22 @@ import {
     inviteCollaborator,
     updateCollaboratorRole,
     removeCollaborator,
-    MemoirCollaboration, // Using the new interface
-    InviteCollaboratorPayload,
     CollaborationRole
 } from '../../services/api';
+import type { MemoirCollaboration, InviteCollaboratorPayload } from '../../services/api'; // Fixed type imports
 
 const MemoirCollaboratorsPage: React.FC = () => {
-  const { id: memoirId } = useParams<{ id: string }>(); // Renamed 'id' to 'memoirId' for clarity
+  const { id: memoirId } = useParams<{ id: string }>();
   const [collaborators, setCollaborators] = useState<MemoirCollaboration[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [memoirTitle, setMemoirTitle] = useState<string>(''); // Optional: Fetch memoir title
 
   const fetchMemoirCollaborators = useCallback(async () => {
     if (!memoirId) return;
     setIsLoading(true);
     setError(null);
     try {
-      // Optional: Fetch memoir title for display - assuming getMemoirById exists and returns { title }
-      // const memoirData = await getMemoirById(memoirId);
-      // setMemoirTitle(memoirData.title);
-      // For now, we'll just use the ID in the title
-
-      const data = await getCollaborators(memoirId); // Uses actual API call
+      const data = await getCollaborators(memoirId);
       setCollaborators(data);
     } catch (err) {
       console.error('Failed to fetch collaborators:', err);
@@ -46,11 +39,10 @@ const MemoirCollaboratorsPage: React.FC = () => {
   const handleInviteCollaborator = async (payload: Omit<InviteCollaboratorPayload, 'memoirId'>) => {
     if (!memoirId) {
       setError("Memoir ID is missing.");
-      throw new Error("Memoir ID is missing."); // Ensure promise is rejected for form
+      throw new Error("Memoir ID is missing.");
     }
     setError(null);
     try {
-      // Pass memoirId along with phone and role to the API function
       const newCollaborator = await inviteCollaborator(memoirId, payload);
       setCollaborators(prev => [...prev, newCollaborator]);
     } catch (err) {
@@ -70,7 +62,7 @@ const MemoirCollaboratorsPage: React.FC = () => {
         console.error('Failed to update role:', err);
         const errorMessage = err instanceof Error ? err.message : 'Failed to update role.';
         setError(errorMessage);
-        alert(`Error: ${errorMessage}`); // Simple alert for now
+        alert(`Error: ${errorMessage}`);
     }
   };
 
@@ -84,7 +76,7 @@ const MemoirCollaboratorsPage: React.FC = () => {
             console.error('Failed to remove collaborator:', err);
             const errorMessage = err instanceof Error ? err.message : 'Failed to remove collaborator.';
             setError(errorMessage);
-            alert(`Error: ${errorMessage}`); // Simple alert
+            alert(`Error: ${errorMessage}`);
         }
     }
   };
@@ -99,7 +91,7 @@ const MemoirCollaboratorsPage: React.FC = () => {
         Manage Collaborators
       </h1>
       <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-8">
-        For Memoir: {memoirTitle || memoirId}
+        For Memoir: {memoirId}
       </p>
 
       {error && <p className="text-red-500 dark:text-red-400 bg-red-100 dark:bg-red-900 p-3 rounded-md text-center mb-4">{error}</p>}
@@ -120,7 +112,7 @@ const MemoirCollaboratorsPage: React.FC = () => {
           ) : collaborators.length > 0 ? (
             <CollaboratorList
               collaborators={collaborators}
-              onUpdateRole={handleUpdateRole} // Changed prop name for clarity
+              onUpdateRole={handleUpdateRole}
               onRemoveCollaborator={handleRemoveCollaborator}
             />
           ) : (

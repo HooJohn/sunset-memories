@@ -1,19 +1,22 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import VoiceRecorder from '../../components/memoirs/VoiceRecorder';
-import ChapterOutline, { Chapter } from '../../components/memoirs/ChapterOutline'; // Ensure Chapter from ChapterOutline matches api.Chapter or is compatible
+import ChapterOutline from '../../components/memoirs/ChapterOutline';
+// Removed unused Chapter import
 import RichTextEditor from '../../components/memoirs/RichTextEditor';
 import { Editor } from '@tiptap/react';
-import { createMemoir, CreateMemoirPayload, Chapter as ApiChapter } from '../../services/api'; // Using CreateMemoirPayload
+import { createMemoir } from '../../services/api'; // Removed unused generateChapters import
+import type { CreateMemoirPayload, Chapter as ApiChapter } from '../../services/api';
 
-enum CreationStep {
-  Recording,
-  OutlineGeneration,
-  Editing,
-  Saving,
-  Saved,
-  Error,
-}
+const CreationStep = {
+  Recording: 0,
+  OutlineGeneration: 1,
+  Editing: 2,
+  Saving: 3,
+  Saved: 4,
+  Error: 5,
+} as const;
+type CreationStep = typeof CreationStep[keyof typeof CreationStep];
 
 const CreateMemoirPage: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<CreationStep>(CreationStep.Recording);
@@ -159,7 +162,7 @@ const CreateMemoirPage: React.FC = () => {
                         onChange={(e) => setMemoirTitle(e.target.value)}
                         placeholder="Enter your memoir title"
                         className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                        disabled={currentStep > CreationStep.Editing || currentStep === CreationStep.Saving}
+                        disabled={currentStep > CreationStep.Editing}
                     />
                 </div>
                 <RichTextEditor

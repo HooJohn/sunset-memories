@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { getPendingInvitations, respondToInvitation, MemoirCollaboration, CollaborationStatus } from '../../services/api';
+import { getPendingInvitations, respondToInvitation, CollaborationStatus } from '../../services/api';
+import type { MemoirCollaboration } from '../../services/api';
 
 const PendingInvitationsPage: React.FC = () => {
   const [invitations, setInvitations] = useState<MemoirCollaboration[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<{ [key: string]: string | null }>({}); // Error per invitation action
-  const [actionLoading, setActionLoading] = useState<{ [key: string]: boolean }>({}); // Loading per invitation action
+  const [actionError, setActionError] = useState<{ [key: string]: string | null }>({});
+  const [actionLoading, setActionLoading] = useState<{ [key: string]: boolean }>({});
 
   const fetchInvitations = useCallback(async () => {
     setIsLoading(true);
@@ -27,18 +28,17 @@ const PendingInvitationsPage: React.FC = () => {
     fetchInvitations();
   }, [fetchInvitations]);
 
-  const handleResponse = async (collaborationId: string, status: CollaborationStatus.ACCEPTED | CollaborationStatus.REJECTED) => {
+  const handleResponse = async (collaborationId: string, status: 'accepted' | 'rejected') => {
     setActionLoading(prev => ({ ...prev, [collaborationId]: true }));
     setActionError(prev => ({ ...prev, [collaborationId]: null }));
     try {
-      const updatedInvitation = await respondToInvitation(collaborationId, { status });
-      // Update UI: either remove the invitation or change its status
-      if (status === CollaborationStatus.ACCEPTED) {
+      await respondToInvitation(collaborationId, { status });
+      
+      if (status === 'accepted') {
         setInvitations(prev => prev.map(inv =>
           inv.id === collaborationId ? { ...inv, status: CollaborationStatus.ACCEPTED } : inv
         ));
-        // Or refetch: fetchInvitations();
-      } else { // Rejected
+      } else {
         setInvitations(prev => prev.filter(inv => inv.id !== collaborationId));
       }
     } catch (err) {
@@ -82,14 +82,14 @@ const PendingInvitationsPage: React.FC = () => {
               {invitation.status === CollaborationStatus.PENDING && (
                 <div className="flex space-x-4 mt-4">
                   <button
-                    onClick={() => handleResponse(invitation.id, CollaborationStatus.ACCEPTED)}
+                    onClick={() => handleResponse(invitation.id, 'accepted')}
                     disabled={actionLoading[invitation.id]}
                     className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-md shadow-sm disabled:bg-gray-400"
                   >
                     {actionLoading[invitation.id] ? 'Processing...' : 'Accept'}
                   </button>
                   <button
-                    onClick={() => handleResponse(invitation.id, CollaborationStatus.REJECTED)}
+                    onClick={() => handleResponse(invitation.id, 'rejected')}
                     disabled={actionLoading[invitation.id]}
                     className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md shadow-sm disabled:bg-gray-400"
                   >
@@ -101,16 +101,16 @@ const PendingInvitationsPage: React.FC = () => {
                 <p className="text-green-600 dark:text-green-400 font-semibold">You have accepted this invitation.</p>
               )}
               {actionError[invitation.id] && <p className="text-red-500 dark:text-red-400 mt-2 text-sm">{actionError[invitation.id]}</p>}
-               <p className="text-xs text-gray-400 dark:text-gray-500 mt-3">Invitation ID: {invitation.id}</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-3">Invitation ID: {invitation.id}</p>
             </div>
           ))}
         </div>
       )}
-       <div className="mt-8 text-center">
-          <Link to="/profile" className="text-indigo-600 dark:text-indigo-400 hover:underline">
-            &larr; Back to Profile
-          </Link>
-        </div>
+      <div className="mt-8 text-center">
+        <Link to="/profile" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+          &larr; Back to Profile
+        </Link>
+      </div>
     </div>
   );
 };

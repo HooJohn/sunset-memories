@@ -2,12 +2,14 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
     getPublicMemoirDetails,
+    addCommentToMemoir,
+    getCommentsForMemoir,
+    likeMemoir,
+    unlikeMemoir
+} from '../../services/api';
+import type {
     PublicMemoirDetail, // Using new interface
     MemoirComment as CommentType,
-    addCommentToMemoir,
-    getCommentsForMemoir, // New function
-    likeMemoir,
-    unlikeMemoir,
     LikeResponse,
     AddCommentPayload
 } from '../../services/api';

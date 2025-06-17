@@ -2,13 +2,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import PublishOrderForm from '../../components/publishing/PublishOrderForm';
-import { submitPublishOrder, getMemoirById, PublishOrderData, MemoirResponse } from '../../services/api'; // To be updated in api.ts
+import { submitPublishOrder, getMemoirById } from '../../services/api'; // To be updated in api.ts
+import type { PublishOrderData, Memoir } from '../../services/api'; // 类型导入
 
 const CreatePublishOrderPage: React.FC = () => {
   const { memoirId } = useParams<{ memoirId: string }>();
   const navigate = useNavigate();
 
-  const [memoir, setMemoir] = useState<MemoirResponse | null>(null);
+  const [memoir, setMemoir] = useState<Memoir | null>(null);
   const [isLoadingMemoir, setIsLoadingMemoir] = useState(true);
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
   const [error, setError] = useState<string | null>(null);

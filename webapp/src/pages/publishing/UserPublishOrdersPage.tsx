@@ -2,7 +2,8 @@
 import React, { useEffect, useState } from 'react';
 // import { Link } from 'react-router-dom'; // If needed for linking to specific orders
 import UserPublishOrderItem from '../../components/publishing/UserPublishOrderItem';
-import { getUserPublishOrders, PublishOrder } from '../../services/api'; // To be updated in api.ts
+import { getUserPublishOrders } from '../../services/api'; // To be updated in api.ts
+import type { PublishOrder } from '../../services/api'; // 类型导入
 
 const UserPublishOrdersPage: React.FC = () => {
   const [orders, setOrders] = useState<PublishOrder[]>([]);

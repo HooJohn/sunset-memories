@@ -1,7 +1,7 @@
 // Placeholder for UserPublishOrderItem.tsx
 import React from 'react';
 // import { Link } from 'react-router-dom'; // If linking to detailed order view
-import { PublishOrder, PublishOrderStatus } from '../../services/api'; // To be updated in api.ts
+import type { PublishOrder, PublishOrderStatus } from '../../services/api'; // To be updated in api.ts
 
 interface UserPublishOrderItemProps {
   order: PublishOrder;

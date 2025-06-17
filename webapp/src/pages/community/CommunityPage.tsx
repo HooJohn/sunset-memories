@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import MemoirCard from '../../components/community/MemoirCard';
-import { getPublicMemoirs, PublicMemoirSummary, likeMemoir, unlikeMemoir, LikeResponse } from '../../services/api';
+import { getPublicMemoirs, likeMemoir, unlikeMemoir } from '../../services/api';
+import type { PublicMemoirSummary, LikeResponse } from '../../services/api';
 
 const CommunityPage: React.FC = () => {
   const [memoirs, setMemoirs] = useState<PublicMemoirSummary[]>([]);

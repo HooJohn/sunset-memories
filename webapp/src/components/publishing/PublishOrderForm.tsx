@@ -1,6 +1,6 @@
 // Placeholder for PublishOrderForm.tsx
 import React, { useState } from 'react';
-import { PublishOrderData, PublishFormat } from '../../services/api'; // To be updated in api.ts
+import type { PublishOrderData, PublishFormat } from '../../services/api'; // To be updated in api.ts
 
 interface PublishOrderFormProps {
   onSubmit: (formData: Omit<PublishOrderData, 'memoirId'>) => Promise<void>;
