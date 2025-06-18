@@ -63,7 +63,7 @@ const MemoirCard: React.FC<MemoirCardProps> = ({ memoir, onLikeToggle, isLiked }
           </Link>
         </div>
       </div>
-    </div>
+    </div> // This is the correctly placed closing tag for the outer div
   );
 };
 
