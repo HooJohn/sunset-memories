@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { getMemoirs, getMemoirById, Memoir as UserMemoir, Chapter } from '../../services/api';
+import { getMemoirs, getMemoirById } from '../../services/api';
+import type { Memoir as UserMemoir } from '../../services/api'; // Chapter removed
 import { PlusCircleIcon, ArrowLeftIcon, ListBulletIcon, BookOpenIcon } from '@heroicons/react/24/outline';
 
 const MyMemoirsPage: React.FC = () => {
@@ -19,8 +20,8 @@ const MyMemoirsPage: React.FC = () => {
     setIsLoadingList(true);
     setListError(null);
     try {
-      const response = await getMemoirs();
-      setMemoirs(response.data || []);
+      const userMemoirs = await getMemoirs(); // getMemoirs() returns Memoir[] directly
+      setMemoirs(userMemoirs || []);
     } catch (err) {
       console.error('Failed to fetch user memoirs:', err);
       setListError(err instanceof Error ? err.message : '加载您的回忆录列表失败');
@@ -244,8 +245,9 @@ const MyMemoirsPage: React.FC = () => {
                   {/* Can add status like 'Published' or 'Draft' if available */}
                 </span>
               </div>
+              {/* Ensure snippet display is safe and provides fallback */}
               <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base line-clamp-2 sm:line-clamp-3 mb-3">
-                {memoir.snippet || '暂无简介...'}
+                {memoir.snippet ? memoir.snippet : '暂无简介...'}
               </p>
               <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-500 flex flex-col sm:flex-row sm:space-x-4">
                 <span>创建于: {formatDate(memoir.created_at)}</span>
