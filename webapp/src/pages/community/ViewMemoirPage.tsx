@@ -117,20 +117,21 @@ const ViewMemoirPage: React.FC = () => {
   };
 
   if (isLoading) {
-    return <div className="text-center p-10"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div><p className="dark:text-gray-300 mt-4">加载回忆录中...</p></div>;
+    return <div className="text-center p-10"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-senior-friendly-primary mx-auto"></div><p className="text-senior-friendly-text dark:text-gray-300 mt-4">加载回忆录中...</p></div>;
   }
   if (error) {
-    return <p className="text-center text-red-500 dark:text-red-400 bg-red-100 dark:bg-red-900 p-4 rounded-md shadow">{error}</p>;
+    return <p className="text-center text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900 p-4 rounded-md shadow text-base sm:text-lg">{error}</p>;
   }
   if (!memoirDetail) {
-    return <p className="text-center p-10 dark:text-gray-300">回忆录未找到。</p>;
+    return <p className="text-center p-10 text-senior-friendly-text dark:text-gray-300">回忆录未找到。</p>;
   }
 
   // Determine content to render (either full content_html or chapters)
   let memoirContentHtml = memoirDetail.content_html || '';
   if (!memoirContentHtml && memoirDetail.chapters && memoirDetail.chapters.length > 0) {
     memoirContentHtml = memoirDetail.chapters.map(chap =>
-        `<h2>${chap.title}</h2><div>${chap.content}</div>` // Assuming chapter.content is HTML
+        // Ensure chapter titles are distinct and chapter content is wrapped if it's plain text
+        `<h2 class="text-2xl font-semibold mt-6 mb-3">${chap.title}</h2><div class="prose-p:text-justify">${chap.content}</div>`
     ).join('');
   }
   if (!memoirContentHtml) {
@@ -139,50 +140,50 @@ const ViewMemoirPage: React.FC = () => {
 
 
   return (
-    <div className="container mx-auto p-4 md:p-8">
-      <article className="bg-white dark:bg-gray-800 shadow-xl rounded-lg p-6 md:p-10">
-        <header className="mb-8 border-b pb-6 border-gray-200 dark:border-gray-700">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 dark:text-gray-100 mb-3">{memoirDetail.title}</h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400">
-            作者：<Link to={`/users/${memoirDetail.author.id}`} className="text-indigo-600 dark:text-indigo-400 hover:underline">{memoirDetail.author.nickname || memoirDetail.author.name || '未知作者'}</Link>
+    <div className="container mx-auto p-4 sm:p-6 md:p-8">
+      <article className="bg-white dark:bg-gray-800 shadow-xl rounded-lg p-5 sm:p-6 md:p-10">
+        <header className="mb-6 md:mb-8 border-b pb-4 md:pb-6 border-gray-200 dark:border-gray-700">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-800 dark:text-gray-100 mb-3">{memoirDetail.title}</h1>
+          <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400">
+            作者：<Link to={`/users/${memoirDetail.author.id}`} className="text-senior-friendly-primary dark:text-senior-friendly-primary-light hover:underline">{memoirDetail.author.nickname || memoirDetail.author.name || '未知作者'}</Link>
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">发布日期：{new Date(memoirDetail.created_at).toLocaleDateString()}</p>
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-500 mt-1">发布日期：{new Date(memoirDetail.created_at).toLocaleDateString()}</p>
         </header>
 
         <div
-            className="prose prose-lg dark:prose-invert max-w-none mx-auto"
+            className="prose dark:prose-invert max-w-none sm:prose-lg prose-p:text-justify prose-headings:font-semibold prose-headings:text-senior-friendly-primary"
             dangerouslySetInnerHTML={{ __html: memoirContentHtml }}
         />
 
-        <footer className="mt-10 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex justify-between items-center">
+        <footer className="mt-8 md:mt-10 pt-4 md:pt-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <button
                     type="button"
                     onClick={handleLikeToggle}
-                    className={`px-4 py-2 rounded-md font-semibold flex items-center space-x-2 transition-colors duration-150
+                    className={`w-full sm:w-auto px-4 py-2.5 rounded-lg font-semibold flex items-center justify-center space-x-2 transition-colors duration-150
                         ${memoirDetail.isLikedByCurrentUser
-                            ? 'bg-red-500 text-white hover:bg-red-600'
-                            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
+                            ? 'bg-red-500 text-white hover:bg-red-600 focus:ring-red-400'
+                            : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-500 focus:ring-senior-friendly-primary'}`}
                 >
                     <span>{memoirDetail.isLikedByCurrentUser ? '❤️ 已赞' : '🤍 点赞'}</span>
-                    <span className={`ml-1 px-2 py-0.5 rounded-full text-sm ${memoirDetail.isLikedByCurrentUser ? 'bg-white text-red-500' : 'bg-gray-300 dark:bg-gray-600'}`}>
+                    <span className={`ml-1 px-2.5 py-1 rounded-full text-sm font-medium ${memoirDetail.isLikedByCurrentUser ? 'bg-white text-red-500' : 'bg-gray-300 dark:bg-gray-500 text-gray-700 dark:text-gray-100'}`}>
                         {memoirDetail.likeCount ?? 0}
                     </span>
                 </button>
+                {likeError && <p className="text-red-500 dark:text-red-400 text-sm mt-2 sm:mt-0 sm:ml-4 w-full sm:w-auto text-center sm:text-left">{likeError}</p>}
             </div>
-            {likeError && <p className="text-red-500 dark:text-red-400 text-sm mt-2">{likeError}</p>}
         </footer>
       </article>
 
-      <section className="mt-12">
-        <h2 className="text-3xl font-semibold mb-6 text-gray-800 dark:text-gray-100">评论 ({comments.length})</h2>
-        <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg p-6 md:p-8">
-          <h3 className="text-2xl font-semibold mb-4 text-indigo-700 dark:text-indigo-400">发表评论</h3>
+      <section className="mt-10 md:mt-12">
+        <h2 className="text-2xl sm:text-3xl font-semibold mb-4 sm:mb-6 text-gray-800 dark:text-gray-100">评论 ({comments.length})</h2>
+        <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg p-5 sm:p-6 md:p-8">
+          <h3 className="text-xl sm:text-2xl font-semibold mb-4 text-senior-friendly-primary dark:text-senior-friendly-primary-light">发表评论</h3>
           <MemoirCommentForm onSubmit={handleAddComment} />
-          {commentError && <p className="text-red-500 dark:text-red-400 mt-2 text-sm">{commentError}</p>}
+          {commentError && <p className="text-red-600 dark:text-red-400 mt-2 text-sm">{commentError}</p>}
         </div>
 
-        <div className="mt-8 space-y-6">
+        <div className="mt-6 sm:mt-8 space-y-6">
           {isLoadingComments ? (
             <p className="dark:text-gray-300 text-center">加载评论中...</p>
           ) : comments.length > 0 ? (
