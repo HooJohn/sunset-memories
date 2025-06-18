@@ -20,36 +20,37 @@ const MemoirCard: React.FC<MemoirCardProps> = ({ memoir, onLikeToggle, isLiked }
 
   return (
     <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden flex flex-col h-full hover:shadow-2xl transition-shadow duration-300 ease-in-out">
-      <div className="p-6 flex flex-col flex-grow">
-        <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-          <Link to={`/community/memoirs/${memoir.id}`} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-200">
+      <div className="p-4 sm:p-6 flex flex-col flex-grow">
+        <h3 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+          <Link to={`/community/memoirs/${memoir.id}`} className="hover:text-senior-friendly-primary-dark dark:hover:text-senior-friendly-primary-light transition-colors duration-200">
             {memoir.title}
           </Link>
         </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-          作者: <Link to={`/users/${authorIdForLink}`} className="text-indigo-500 dark:text-indigo-400 hover:underline">{authorName}</Link>
+        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-3">
+          作者: <Link to={`/users/${authorIdForLink}`} className="text-senior-friendly-primary dark:text-senior-friendly-primary-light hover:underline">{authorName}</Link>
         </p>
-        <p className="text-gray-700 dark:text-gray-300 text-base mb-4 flex-grow">
-          {truncateText(memoir.snippet, 150)}
+        <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 mb-4 flex-grow">
+          {truncateText(memoir.snippet, 120)} {/* Adjusted snippet length for potentially smaller cards */}
         </p>
 
-        <div className="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+        <div className="mt-auto pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
           <button
             type="button"
             onClick={() => onLikeToggle(memoir.id)}
             aria-pressed={isLiked}
             aria-label={isLiked ? "取消点赞此回忆录" : "点赞此回忆录"}
-            className={`px-3 py-1.5 rounded-md text-sm font-semibold flex items-center space-x-1.5 transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800
+            className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-1.5 transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800
                         ${isLiked
                             ? 'bg-red-500 text-white hover:bg-red-600 focus:ring-red-500'
-                            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 focus:ring-indigo-500'}`}
+                            : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-500 focus:ring-senior-friendly-primary'}`}
           >
-            <span>{isLiked ? '❤️' : '🤍'}</span>
+            {/* Using text for heart to ensure visibility, could be replaced with actual SVG icons */}
+            <span className={`mr-1 ${isLiked ? 'text-red-300' : 'text-gray-400'}`}>{isLiked ? '♥' : '♡'}</span>
             <span>{memoir.likeCount ?? 0}</span>
           </button>
           <Link
             to={`/community/memoirs/${memoir.id}`}
-            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium text-sm"
+            className="text-senior-friendly-primary dark:text-senior-friendly-primary-light hover:underline font-medium text-sm"
           >
             查看更多 &rarr;
           </Link>

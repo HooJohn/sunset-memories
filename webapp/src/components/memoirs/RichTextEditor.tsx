@@ -15,19 +15,26 @@ const MenuBar: React.FC<{ editor: Editor | null }> = ({ editor }) => {
   }
 
   const buttonClass = (isActive?: boolean) =>
-    `px-3 py-1 m-1 border rounded ${isActive ? 'bg-indigo-500 text-white' : 'bg-white hover:bg-gray-100'}`;
+    `px-2 md:px-3 py-2 md:py-1 m-0.5 md:m-1 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400
+     ${isActive ? 'bg-senior-friendly-primary text-white' : 'bg-white hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200'}`;
+
+  // Helper for button text to be more concise on mobile
+  // Using simple text for now, could be icons
+  const btnText = (desktop: string, mobile: string) => <><span className="hidden sm:inline">{desktop}</span><span className="sm:hidden">{mobile}</span></>;
+
 
   return (
-    <div className="bg-gray-100 p-2 rounded-t-lg border-b border-gray-300 flex flex-wrap items-center" role="toolbar">
+    <div className="bg-gray-100 dark:bg-gray-900 p-1 md:p-2 rounded-t-lg border-b border-gray-300 dark:border-gray-700 flex flex-wrap items-center" role="toolbar">
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleBold().run()}
         disabled={!editor.can().chain().focus().toggleBold().run()}
         className={buttonClass(editor.isActive('bold'))}
         aria-pressed={editor.isActive('bold')}
+        title="Bold" // Tooltip for desktop
         aria-label="Toggle bold text"
       >
-        Bold
+        {btnText("Bold", "B")}
       </button>
       <button
         type="button"
@@ -35,9 +42,10 @@ const MenuBar: React.FC<{ editor: Editor | null }> = ({ editor }) => {
         disabled={!editor.can().chain().focus().toggleItalic().run()}
         className={buttonClass(editor.isActive('italic'))}
         aria-pressed={editor.isActive('italic')}
+        title="Italic"
         aria-label="Toggle italic text"
       >
-        Italic
+        {btnText("Italic", "I")}
       </button>
       <button
         type="button"
@@ -45,24 +53,27 @@ const MenuBar: React.FC<{ editor: Editor | null }> = ({ editor }) => {
         disabled={!editor.can().chain().focus().toggleStrike().run()}
         className={buttonClass(editor.isActive('strike'))}
         aria-pressed={editor.isActive('strike')}
+        title="Strikethrough"
         aria-label="Toggle strikethrough text"
       >
-        Strike
+        {btnText("Strike", "S")}
       </button>
       <button
         type="button"
         onClick={() => editor.chain().focus().setParagraph().run()}
         className={buttonClass(editor.isActive('paragraph'))}
         aria-pressed={editor.isActive('paragraph')}
+        title="Paragraph"
         aria-label="Set as paragraph"
       >
-        Paragraph
+        {btnText("Paragraph", "P")}
       </button>
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
         className={buttonClass(editor.isActive('heading', { level: 1 }))}
         aria-pressed={editor.isActive('heading', {level: 1})}
+        title="Heading 1"
         aria-label="Toggle heading level 1"
       >
         H1
@@ -72,6 +83,7 @@ const MenuBar: React.FC<{ editor: Editor | null }> = ({ editor }) => {
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
         className={buttonClass(editor.isActive('heading', { level: 2 }))}
         aria-pressed={editor.isActive('heading', {level: 2})}
+        title="Heading 2"
         aria-label="Toggle heading level 2"
       >
         H2
@@ -81,6 +93,7 @@ const MenuBar: React.FC<{ editor: Editor | null }> = ({ editor }) => {
         onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
         className={buttonClass(editor.isActive('heading', { level: 3 }))}
         aria-pressed={editor.isActive('heading', {level: 3})}
+        title="Heading 3"
         aria-label="Toggle heading level 3"
       >
         H3
@@ -90,36 +103,59 @@ const MenuBar: React.FC<{ editor: Editor | null }> = ({ editor }) => {
         onClick={() => editor.chain().focus().toggleBulletList().run()}
         className={buttonClass(editor.isActive('bulletList'))}
         aria-pressed={editor.isActive('bulletList')}
+        title="Bullet List"
         aria-label="Toggle bullet list"
       >
-        Bullet List
+        {btnText("Bullet List", "•")}
       </button>
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
         className={buttonClass(editor.isActive('orderedList'))}
         aria-pressed={editor.isActive('orderedList')}
+        title="Ordered List"
         aria-label="Toggle ordered list"
       >
-        Ordered List
+        {btnText("Ordered List", "1.")}
       </button>
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
         className={buttonClass(editor.isActive('blockquote'))}
         aria-pressed={editor.isActive('blockquote')}
+        title="Blockquote"
         aria-label="Toggle blockquote"
       >
-        Blockquote
+        {btnText("Quote", ">")}
       </button>
-      <button type="button" onClick={() => editor.chain().focus().setHorizontalRule().run()} className={buttonClass()} aria-label="Insert horizontal rule">
-        Horizontal Rule
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().setHorizontalRule().run()}
+        className={buttonClass()}
+        title="Horizontal Rule"
+        aria-label="Insert horizontal rule"
+      >
+        {btnText("Rule", "—")}
       </button>
-      <button type="button" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} className={buttonClass()} aria-label="Undo last action">
-        Undo
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().undo().run()}
+        disabled={!editor.can().undo()}
+        className={buttonClass()}
+        title="Undo"
+        aria-label="Undo last action"
+      >
+        {btnText("Undo", "↺")}
       </button>
-      <button type="button" onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} className={buttonClass()} aria-label="Redo last undone action">
-        Redo
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().redo().run()}
+        disabled={!editor.can().redo()}
+        className={buttonClass()}
+        title="Redo"
+        aria-label="Redo last undone action"
+      >
+        {btnText("Redo", "↻")}
       </button>
     </div>
   );
