@@ -30,7 +30,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <span>Icon</span>
           <span>首页</span>
         </Link>
-        <Link to="/memoirs/create" className="flex flex-col items-center text-sm text-senior-friendly-primary hover:text-senior-friendly-primary-dark">
+        <Link to="/my-creations" className="flex flex-col items-center text-sm text-senior-friendly-primary hover:text-senior-friendly-primary-dark">
           {/* Icon Placeholder */}
           <span>Icon</span>
           <span>创作</span>

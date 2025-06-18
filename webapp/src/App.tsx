@@ -6,6 +6,7 @@ import RegisterPage from './pages/auth/RegisterPage';
 import ProfilePage from './pages/user/ProfilePage';
 // Memoir Pages
 import CreateMemoirPage from './pages/memoirs/CreateMemoirPage';
+import MyMemoirsPage from './pages/memoirs/MyMemoirsPage'; // New page for listing user's memoirs
 import EditMemoirPage from './pages/memoirs/EditMemoirPage';
 import MemoirCollaboratorsPage from './pages/memoirs/MemoirCollaboratorsPage';
 // Service Request Pages
@@ -21,15 +22,75 @@ import ViewMemoirPage from './pages/community/ViewMemoirPage';
 import PendingInvitationsPage from './pages/user/PendingInvitationsPage'; // New import
 
 import './App.css'; // Assuming you still want App.css for global styles not covered by Tailwind
+import FeaturedMemoirBanner from './components/home/FeaturedMemoirBanner'; // Import the new banner
+
+import { getPublicMemoirs, PublicMemoirSummary } from './services/api'; // For content feed
+import MemoirCard from './components/community/MemoirCard'; // For content feed
+import { useState, useEffect, useCallback } from 'react'; // For content feed state and effects
 
 // A simple placeholder for a home page component
-const HomePage: React.FC = () => (
-  <div className="text-center p-4 sm:p-6 md:p-10">
-    <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-senior-friendly-primary">🌟 记录您的故事，分享您的回忆</h2>
-    <p className="mb-8 text-base sm:text-lg text-senior-friendly-text">一个专为老年用户设计的平台，旨在帮助他们轻松记录、整理和分享自己的回忆录。</p>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mt-8">
-      {/* Card 1: Create Memoir */}
-      <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center">
+const HomePage: React.FC = () => {
+  const [feedMemoirs, setFeedMemoirs] = useState<PublicMemoirSummary[]>([]);
+  const [feedCurrentPage, setFeedCurrentPage] = useState(1);
+  const [feedIsLoading, setFeedIsLoading] = useState(false);
+  const [feedError, setFeedError] = useState<string | null>(null);
+  const [hasMoreMemoirs, setHasMoreMemoirs] = useState(true);
+  const feedLimitPerPage = 2;
+
+
+  const fetchFeedMemoirs = useCallback(async (page: number, append: boolean = false) => {
+    setFeedIsLoading(true);
+    setFeedError(null);
+    try {
+      const response = await getPublicMemoirs(page, feedLimitPerPage);
+      if (response.data && response.data.length > 0) {
+        setFeedMemoirs(prevMemoirs => append ? [...prevMemoirs, ...response.data] : response.data);
+        setFeedCurrentPage(page);
+        if (response.data.length < feedLimitPerPage || (page * feedLimitPerPage) >= response.total) {
+          setHasMoreMemoirs(false);
+        }
+      } else {
+        setHasMoreMemoirs(false); // No more data found
+      }
+    } catch (err) {
+      console.error('Failed to fetch feed memoirs:', err);
+      setFeedError(err instanceof Error ? err.message : '加载动态失败');
+    } finally {
+      setFeedIsLoading(false);
+    }
+  }, [feedLimitPerPage]);
+
+  useEffect(() => {
+    // Initial fetch for the feed
+    fetchFeedMemoirs(1, false);
+  }, [fetchFeedMemoirs]);
+
+  const handleLoadMore = () => {
+    if (hasMoreMemoirs && !feedIsLoading) {
+      fetchFeedMemoirs(feedCurrentPage + 1, true);
+    }
+  };
+
+  // Dummy like toggle handler for MemoirCard, actual liking handled on community/details page
+  const handleDummyLikeToggle = (memoirId: string) => {
+    console.log("Like toggle attempted on homepage for memoir:", memoirId);
+    // In a real scenario, you might want to update a local liked state
+    // or navigate to the memoir page for the user to perform the action.
+    // For this feed, we'll keep it simple and not implement optimistic updates here.
+  };
+
+
+  return (
+    <div className="space-y-10 md:space-y-16 pb-10 md:pb-16"> {/* Added pb for spacing */}
+      <FeaturedMemoirBanner />
+
+      {/* Original HomePage content starts here, wrapped in a new div for consistent padding */}
+      <div className="text-center px-4 sm:px-6"> {/* Reduced top padding as banner is above, px for side padding */}
+        <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-senior-friendly-primary">🌟 记录您的故事，分享您的回忆</h2>
+        <p className="mb-8 text-base sm:text-lg text-senior-friendly-text">一个专为老年用户设计的平台，旨在帮助他们轻松记录、整理和分享自己的回忆录。</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mt-8">
+          {/* Card 1: Create Memoir */}
+          <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center">
         <h3 className="text-xl sm:text-2xl font-semibold mb-3 text-senior-friendly-primary">创建回忆录</h3>
         <p className="text-sm sm:text-base mb-4 text-senior-friendly-text-light text-center">通过简单的步骤，开始撰写您的第一篇回忆录。</p>
         <Link
@@ -63,7 +124,55 @@ const HomePage: React.FC = () => (
       </div>
     </div>
   </div>
-);
+
+  {/* Content Feed Section */}
+  <section className="px-4 sm:px-6">
+    <h2 className="text-2xl sm:text-3xl font-bold mb-6 md:mb-8 text-center sm:text-left text-senior-friendly-primary">
+      最新分享
+    </h2>
+    {feedMemoirs.length === 0 && !feedIsLoading && !feedError && (
+      <p className="text-center text-senior-friendly-text text-lg">暂无分享，敬请期待！</p>
+    )}
+    {feedMemoirs.length === 0 && feedIsLoading && (
+      // Basic loading state for initial feed load
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-senior-friendly-primary mx-auto my-4"></div>
+        <p className="text-senior-friendly-text">加载最新分享中...</p>
+      </div>
+    )}
+    {feedError && <p className="text-center text-red-500 bg-red-100 p-4 rounded-md shadow">{feedError}</p>}
+
+    <div className="space-y-8 max-w-2xl mx-auto"> {/* Vertical stacking, centered with max-width */}
+      {feedMemoirs.map(memoir => (
+        <MemoirCard
+          key={memoir.id}
+          memoir={memoir}
+          // isLiked and onLikeToggle are more complex for a feed on homepage
+          // For now, pass a dummy handler or consider if like status is crucial here
+          isLiked={false} // Or fetch this if truly needed, adds complexity
+          onLikeToggle={() => handleDummyLikeToggle(memoir.id)}
+        />
+      ))}
+    </div>
+
+    {hasMoreMemoirs && !feedError && (
+      <div className="mt-8 md:mt-10 text-center">
+        <button
+          onClick={handleLoadMore}
+          disabled={feedIsLoading}
+          className="bg-senior-friendly-primary text-white font-semibold px-8 py-3 rounded-lg shadow-md hover:bg-senior-friendly-primary-hover disabled:opacity-70 disabled:cursor-not-allowed transition-colors duration-150 ease-in-out text-base sm:text-lg"
+        >
+          {feedIsLoading ? '加载中...' : '加载更多'}
+        </button>
+      </div>
+    )}
+    {!hasMoreMemoirs && feedMemoirs.length > 0 && !feedError && (
+       <p className="text-center text-senior-friendly-text mt-8 md:mt-10">已加载全部内容。</p>
+    )}
+  </section>
+</div>
+  );
+};
 
 function App() {
   return (
@@ -77,7 +186,9 @@ function App() {
           <Route path="/my-invitations" element={<PendingInvitationsPage />} /> {/* New Route */}
 
           {/* Memoir Routes */}
-          <Route path="/memoirs/create" element={<CreateMemoirPage />} />
+          {/* The "Create" link in nav now goes to MyMemoirsPage via /my-creations */}
+          <Route path="/my-creations" element={<MyMemoirsPage />} />
+          <Route path="/memoirs/create" element={<CreateMemoirPage />} /> {/* MyMemoirsPage links here to create new */}
           <Route path="/memoirs/edit/:id" element={<EditMemoirPage />} />
           <Route path="/memoirs/:id/collaborators" element={<MemoirCollaboratorsPage />} />
           <Route path="/memoirs/:memoirId/publish" element={<CreatePublishOrderPage />} />
