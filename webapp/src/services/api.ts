@@ -333,7 +333,9 @@ export interface PublicChapter { id: string; title: string; content: string; ord
 export interface PublicMemoirSummary {
   id: string; title: string; is_public: boolean; created_at: string; updated_at: string;
   author: AuthorInfo;
-  likeCount?: number; isLikedByCurrentUser?: boolean;
+  likeCount?: number;
+  commentCount?: number; // New field for comment count
+  isLikedByCurrentUser?: boolean;
   snippet?: string;
 }
 export interface PublicMemoirDetail {

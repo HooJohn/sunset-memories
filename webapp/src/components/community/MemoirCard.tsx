@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import type { PublicMemoirSummary } from '../../services/api';
+import { ChatBubbleOvalLeftEllipsisIcon } from '@heroicons/react/24/outline'; // Import comment icon
 
 interface MemoirCardProps {
   memoir: PublicMemoirSummary;
@@ -48,9 +49,15 @@ const MemoirCard: React.FC<MemoirCardProps> = ({ memoir, onLikeToggle, isLiked }
             <span className={`mr-1 ${isLiked ? 'text-red-300' : 'text-gray-400'}`}>{isLiked ? '♥' : '♡'}</span>
             <span>{memoir.likeCount ?? 0}</span>
           </button>
-          <Link
-            to={`/community/memoirs/${memoir.id}`}
-            className="text-senior-friendly-primary dark:text-senior-friendly-primary-light hover:underline font-medium text-sm"
+
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+              <ChatBubbleOvalLeftEllipsisIcon className="h-5 w-5 mr-1 text-gray-400 dark:text-gray-500" />
+              <span>{memoir.commentCount ?? 0}</span>
+            </div>
+            <Link
+              to={`/community/memoirs/${memoir.id}`}
+              className="text-senior-friendly-primary dark:text-senior-friendly-primary-light hover:underline font-medium text-sm"
           >
             查看更多 &rarr;
           </Link>
