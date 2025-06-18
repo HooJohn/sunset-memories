@@ -115,6 +115,7 @@ export interface Memoir {
   authorNickname?: string;
   likeCount?: number;
   isLikedByCurrentUser?: boolean;
+  snippet?: string; // Add this line
 }
 export interface CreateMemoirPayload {
   title: string;

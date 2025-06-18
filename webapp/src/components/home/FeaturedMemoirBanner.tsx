@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getPublicMemoirs, PublicMemoirSummary } from '../../services/api';
+import { getPublicMemoirs } from '../../services/api';
+import type { PublicMemoirSummary } from '../../services/api';
 
 const FeaturedMemoirBanner: React.FC = () => {
   const [featuredMemoir, setFeaturedMemoir] = useState<PublicMemoirSummary | null>(null);

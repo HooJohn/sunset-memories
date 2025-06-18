@@ -24,7 +24,8 @@ import PendingInvitationsPage from './pages/user/PendingInvitationsPage'; // New
 import './App.css'; // Assuming you still want App.css for global styles not covered by Tailwind
 import FeaturedMemoirBanner from './components/home/FeaturedMemoirBanner'; // Import the new banner
 
-import { getPublicMemoirs, PublicMemoirSummary } from './services/api'; // For content feed
+import { getPublicMemoirs } from './services/api'; // For content feed
+import type { PublicMemoirSummary } from './services/api'; // For content feed
 import MemoirCard from './components/community/MemoirCard'; // For content feed
 import { useState, useEffect, useCallback } from 'react'; // For content feed state and effects
 
